@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/agents-course/.venv-preview/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/agents-course"
+  ],
+  "python.terminal.activateEnvironment": true
+}
