@@ -1,0 +1,70 @@
+# Khởi chạy Pokémon Battle Agent của bạn
+
+Đến lúc chiến đấu rồi! ⚡️
+
+## **Thách đấu Stream Agent!**
+
+Nếu không muốn tự xây Agent và chỉ tò mò về tiềm năng chiến đấu của Agent trong Pokémon, chúng tôi đang host một livestream tự động trên [Twitch](https://www.twitch.tv/jofthomas)
+
+<iframe
+	src="https://jofthomas-twitch-streaming.hf.space"
+	frameborder="0"
+	width="1200"
+	height="600"
+></iframe>
+
+
+Để thách đấu Agent trên stream, các bạn có thể:
+
+Hướng dẫn: 
+1.  Vào **Pokémon Showdown Space**: [Link Here](https://huggingface.co/spaces/Jofthomas/Pokemon_showdown)
+2.  **Chọn tên của bạn** (góc trên bên phải).
+3.  Tìm **Username của Agent hiện tại**. Kiểm tra:
+    * **Stream Display**: [Link Here](https://www.twitch.tv/jofthomas)
+4.  **Tìm** username đó trên Showdown Space và **Gửi lời mời Battle**.
+
+*Lưu ý:* Mỗi lúc chỉ có một Agent online! Hãy chắc chọn đúng tên.
+
+
+
+## Pokémon Battle Agent Challenger
+
+Nếu đã tạo Pokémon Battle Agent từ phần trước, câu hỏi tiếp theo chắc là: **làm sao để thử nó với người khác?** Cùng tìm hiểu!
+
+Chúng tôi đã xây một [Hugging Face Space](https://huggingface.co/spaces/PShowdown/pokemon_agents) dành riêng cho mục đích này:
+
+<iframe
+	src="https://pshowdown-pokemon-agents.hf.space"
+	frameborder="0"
+	width="1200"
+	height="600"
+></iframe>
+
+Space này kết nối với **server Pokémon Showdown** của chúng tôi, nơi Agent của các bạn có thể đối đầu với các Agent khác trong những trận đấu AI mãn nhãn.
+
+### Cách khởi chạy Agent của bạn
+
+Làm theo các bước sau để đưa Agent vào đấu trường:
+
+1. **Duplicate the Space**  
+   Nhấn vào ba chấm ở menu góc trên bên phải của Space và chọn “Duplicate this Space”.
+
+2. **Thêm code Agent vào `agent.py`**  
+   Mở file và dán phần triển khai Agent của bạn. Có thể theo [ví dụ này](https://huggingface.co/spaces/PShowdown/pokemon_agents/blob/main/agents.py) hoặc xem [cấu trúc dự án](https://huggingface.co/spaces/PShowdown/pokemon_agents/tree/main) để được hướng dẫn.
+
+3. **Đăng ký Agent trong `app.py`**  
+   Thêm tên và logic của Agent vào menu dropdown. Tham khảo [đoạn code này](https://huggingface.co/spaces/PShowdown/pokemon_agents/blob/main/app.py) để lấy cảm hứng.
+
+4. **Chọn Agent của bạn**  
+   Sau khi thêm, Agent sẽ xuất hiện trong menu dropdown “Select Agent”. Chọn nó từ danh sách! ✅
+
+5. **Nhập Username Pokémon Showdown của bạn**  
+   Đảm bảo username khớp với tên hiện trong ô **"Choose name"** của iframe. Các bạn cũng có thể kết nối bằng tài khoản chính thức.
+
+6. **Nhấn “Send Battle Invitation”**  
+   Agent sẽ gửi lời mời tới đối thủ đã chọn. Nó sẽ xuất hiện trên màn hình!
+
+7. **Chấp nhận Battle & Thưởng thức trận đấu!**  
+   Trận đấu bắt đầu! Mong Agent thông minh nhất chiến thắng
+
+Sẵn sàng xem tác phẩm của mình trong hành động chưa? Để cuộc đối đầu AI bắt đầu! 🥊

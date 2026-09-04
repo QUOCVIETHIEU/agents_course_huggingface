@@ -1,0 +1,38 @@
+# Từ LLM đến AI Agent
+
+Ta đã học trong [unit đầu tiên](https://huggingface.co/learn/agents-course/unit1/introduction) rằng AI Agent có khả năng lập kế hoạch và đưa quyết định.  
+Và trong khi LLM đã giúp tương tác với NPC trở nên tự nhiên hơn, Agentic AI còn đi xa hơn: cho phép nhân vật đưa quyết định, lập kế hoạch hành động, và thích nghi với môi trường thay đổi.
+
+Để minh họa sự khác biệt, hãy nghĩ về một NPC RPG cổ điển:
+
+- Với LLM: NPC có thể trả lời câu hỏi theo cách tự nhiên và đa dạng hơn. Tuyệt cho hội thoại, nhưng NPC vẫn tĩnh — nó không hành động trừ khi người chơi làm gì đó trước.
+- Với Agentic AI: NPC có thể quyết định đi tìm giúp đỡ, đặt bẫy, hoặc tránh người chơi hoàn toàn, ngay cả khi không có tương tác trực tiếp.
+
+Sự dịch chuyển nhỏ này thay đổi mọi thứ. Ta đang chuyển từ những "người phản hồi theo kịch bản" sang các diễn viên tự chủ trong thế giới game.
+
+Điều này nghĩa là NPC giờ có thể tương tác trực tiếp với môi trường qua hành vi hướng mục tiêu, dẫn tới gameplay động và khó đoán hơn.
+
+Agentic AI trao cho NPC:
+
+- **Autonomy (Tự chủ)**: Đưa quyết định độc lập dựa trên trạng thái game.
+- **Adaptability (Thích nghi)**: Điều chỉnh chiến lược theo hành động của người chơi.
+- **Persistence (Duy trì)**: Nhớ các tương tác trước để định hình hành vi tương lai.
+
+Điều này biến NPC từ thực thể phản ứng (chỉ phản ứng với đầu vào của người chơi) thành người tham gia chủ động trong thế giới game — mở đường cho gameplay sáng tạo.
+
+
+## Hạn chế lớn của Agent: **chậm** (ít nhất là hiện tại)
+
+Tuy nhiên, đừng quá lạc quan ngay. Dù tiềm năng lớn, Agentic AI hiện vẫn gặp thách thức trong ứng dụng thời gian thực.
+
+Các quá trình lập luận và lập kế hoạch có thể gây latency, khiến nó kém phù hợp với game nhịp độ nhanh như *Doom* hoặc *Super Mario Bros.*
+
+Lấy ví dụ [_Claude Plays Pokémon_](https://www.twitch.tv/claudeplayspokemon). Nếu xét số token cần để **suy nghĩ**, cộng với số token cần để **hành động**, rõ ràng ta sẽ cần chiến lược decoding hoàn toàn khác để chơi thời gian thực trở nên khả thi.
+
+<img src="https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit3/claude-plays-pokemon.png" alt="Claude plays Pokémon"/>
+
+Hầu hết các game cần chạy khoảng 30 FPS, nghĩa là một AI Agent thời gian thực cần hành động 30 lần mỗi giây — điều hiện chưa khả thi với các agentic LLM ngày nay.
+
+Tuy nhiên, các game theo lượt như *Pokémon* là ứng viên lý tưởng, vì chúng cho AI đủ thời gian để cân nhắc và đưa quyết định chiến lược.
+
+Đó là lý do ở phần tiếp theo, các bạn sẽ xây AI Agent của riêng mình để chiến đấu theo kiểu combat theo lượt của Pokémon, và thậm chí tự thách đấu nó. Cùng bắt đầu nào!

@@ -1,0 +1,91 @@
+# Observability và Evaluation cho AI Agent
+
+## 🔎 Observability là gì?
+
+Observability là hiểu những gì đang diễn ra bên trong AI Agent bằng cách nhìn các tín hiệu bên ngoài như logs, metrics và traces. Với AI Agent, điều này nghĩa là theo dõi hành động, mức dùng Tools, các lời gọi model và phản hồi để debug cũng như cải thiện hiệu suất.
+
+![Observability dashboard](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/langfuse-dashboard.png)
+
+## 🔭 Vì sao Agent Observability quan trọng
+
+Không có Observability, AI Agent giống như "hộp đen". Các công cụ Observability làm Agent trở nên minh bạch, giúp các bạn:
+
+- Hiểu sự đánh đổi giữa chi phí và độ chính xác
+- Đo latency
+- Phát hiện ngôn ngữ độc hại & prompt injection
+- Theo dõi phản hồi người dùng
+
+Nói cách khác, nó giúp Agent demo sẵn sàng cho production!
+
+## 🔨 Công cụ Observability
+
+Các công cụ Observability phổ biến cho AI Agent gồm các nền tảng như [Langfuse](https://langfuse.com) và [Arize](https://www.arize.com). Chúng thu thập traces chi tiết và cung cấp dashboard theo dõi metrics theo thời gian thực, giúp phát hiện vấn đề và tối ưu hiệu suất.
+
+Công cụ Observability khác nhau nhiều về tính năng. Một số mã nguồn mở, hưởng lợi từ cộng đồng lớn định hình lộ trình và hệ sinh thái tích hợp phong phú. Một số chuyên sâu vào khía cạnh cụ thể của LLMOps—Observability, Evaluation, hoặc quản lý prompt—trong khi số khác bao phủ toàn bộ quy trình LLMOps. Hãy đọc tài liệu của từng lựa chọn để chọn giải pháp phù hợp.
+
+Nhiều framework Agent như [smolagents](https://huggingface.co/docs/smolagents/v1.12.0/en/index) dùng chuẩn [OpenTelemetry](https://opentelemetry.io/docs/) để lộ metadata cho công cụ Observability. Ngoài ra, các công cụ Observability còn xây instrumentation tùy chỉnh để linh hoạt hơn trong thế giới LLM thay đổi nhanh. Hãy xem tài liệu của công cụ đang dùng để biết những gì được hỗ trợ.
+
+## 🔬 Traces và Spans
+
+Các công cụ Observability thường biểu diễn lần chạy Agent dưới dạng traces và spans.
+
+- **Traces** đại diện cho một nhiệm vụ Agent hoàn chỉnh từ đầu đến cuối (ví dụ xử lý một truy vấn người dùng).
+- **Spans** là các bước riêng lẻ trong một trace (ví dụ gọi language model hoặc truy xuất dữ liệu).
+
+![Example of a smolagent trace in Langfuse](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/trace-tree.png)
+
+## 📊 Các Metrics chính cần theo dõi
+
+Dưới đây là một số metrics phổ biến nhất mà công cụ Observability theo dõi:
+
+**Latency:** Agent phản hồi nhanh đến mức nào? Thời gian chờ dài ảnh hưởng tiêu cực đến trải nghiệm người dùng. Nên đo latency cho cả nhiệm vụ và từng bước bằng cách tracing các lần chạy Agent. Ví dụ, một Agent mất 20 giây cho tất cả các lời gọi model có thể tăng tốc bằng model nhanh hơn hoặc chạy các lời gọi model song song.
+
+**Costs (Chi phí):** Chi phí mỗi lần chạy Agent là bao nhiêu? AI Agent phụ thuộc vào lời gọi LLM tính phí theo token hoặc API bên ngoài. Dùng Tools thường xuyên hoặc nhiều prompt làm chi phí tăng nhanh. Chẳng hạn, nếu Agent gọi LLM năm lần chỉ để cải thiện chất lượng rất nhỏ, cần đánh giá xem chi phí có hợp lý không — hoặc giảm số lần gọi / dùng model rẻ hơn. Theo dõi theo thời gian thực cũng giúp phát hiện đỉnh bất thường (ví dụ bug gây vòng lặp API quá mức).
+
+**Request Errors:** Agent thất bại bao nhiêu request? Có thể gồm lỗi API hoặc lời gọi Tools thất bại. Để Agent vững hơn trong production, hãy thiết lập fallback hoặc retry. Ví dụ, nếu LLM provider A gặp sự cố, chuyển sang LLM provider B làm dự phòng.
+
+**User Feedback:** Triển khai đánh giá trực tiếp từ người dùng mang lại thông tin quý. Có thể gồm đánh giá tường minh (👍thumbs-up/👎down, ⭐1-5 sao) hoặc nhận xét dạng văn bản. Phản hồi tiêu cực liên tục nên cảnh báo — dấu hiệu Agent không hoạt động như kỳ vọng.
+
+**Implicit User Feedback:** Hành vi người dùng cung cấp phản hồi gián tiếp ngay cả khi không có đánh giá tường minh. Có thể gồm diễn đạt lại câu hỏi ngay lập tức, truy vấn lặp lại hoặc nhấn nút retry. Ví dụ, nếu người dùng liên tục hỏi cùng một câu, Agent có lẽ không đáp ứng đúng kỳ vọng.
+
+**Accuracy:** Agent tạo đầu ra đúng hoặc mong muốn với tần suất bao nhiêu? Định nghĩa accuracy khác nhau (ví dụ độ đúng khi giải bài, độ chính xác khi truy xuất thông tin, mức hài lòng người dùng). Bước đầu là định nghĩa thế nào là thành công với Agent của bạn. Có thể theo dõi accuracy qua kiểm tra tự động, điểm Evaluation, hoặc nhãn hoàn thành nhiệm vụ — ví dụ đánh dấu traces là "succeeded" hoặc "failed".
+
+**Automated Evaluation Metrics:** Các bạn cũng có thể thiết lập evals tự động. Chẳng hạn, dùng một LLM để chấm điểm đầu ra của Agent (hữu ích, chính xác, hay không). Một số thư viện mã nguồn mở giúp chấm điểm các khía cạnh khác nhau của Agent — ví dụ [RAGAS](https://docs.ragas.io/) cho RAG Agent hoặc [LLM Guard](https://llm-guard.com/) để phát hiện ngôn ngữ độc hại hoặc prompt injection.
+
+Trong thực tế, kết hợp các metrics này mang lại cái nhìn toàn diện nhất về "sức khỏe" của AI Agent. Trong [notebook ví dụ](https://colab.research.google.com/#fileId=https://huggingface.co/agents-course/notebooks/blob/main/bonus-unit2/monitoring-and-evaluating-agents.ipynb) của chương này, ta sẽ xem các metrics này trong ví dụ thực tế — nhưng trước hết hãy nắm một quy trình Evaluation điển hình.
+
+## 👍 Evaluating AI Agent
+
+Observability mang lại metrics; Evaluation là quá trình phân tích dữ liệu đó (và chạy các bài kiểm thử) để xác định AI Agent đang hoạt động tốt đến mức nào và có thể cải thiện ra sao. Nói cách khác: khi đã có traces và metrics, dùng chúng thế nào để đánh giá Agent và đưa quyết định?
+
+Evaluation định kỳ rất quan trọng vì AI Agent thường mang tính không xác định (non-deterministic) và có thể thay đổi (qua cập nhật hoặc hành vi model bị lệch) — không có Evaluation, các bạn sẽ không biết "Agent thông minh" có thực sự làm tốt việc hay đã bị thoái hóa.
+
+Có hai nhóm Evaluation cho AI Agent: **online evaluation** và **offline evaluation**. Cả hai đều hữu ích và bổ trợ lẫn nhau. Thông thường ta bắt đầu với offline evaluation — bước tối thiểu cần thiết trước khi triển khai bất kỳ Agent nào.
+
+### 🥷 Offline Evaluation
+
+![Dataset items in Langfuse](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/example-dataset.png)
+
+Đây là đánh giá Agent trong môi trường kiểm soát, thường dùng bộ dữ liệu kiểm thử, không phải truy vấn người dùng trực tiếp. Dùng các dataset đã chọn lọc nơi đã biết đầu ra kỳ vọng hoặc hành vi đúng, rồi chạy Agent trên chúng.
+
+Ví dụ, nếu xây Agent giải bài toán từ (math word-problem), có thể có một [test dataset](https://huggingface.co/datasets/gsm8k) gồm 100 bài với đáp án đã biết. Offline evaluation thường diễn ra trong quá trình phát triển (và có thể nằm trong pipeline CI/CD) để kiểm tra cải tiến hoặc phòng ngừa regression. Lợi ích là nó **lặp lại được và cho metrics accuracy rõ ràng vì đã có ground truth**. Các bạn cũng có thể mô phỏng truy vấn người dùng và đo phản hồi so với đáp án lý tưởng, hoặc dùng các metrics tự động như mô tả ở trên.
+
+Thách thức chính với offline eval là đảm bảo test dataset toàn diện và luôn phù hợp — Agent có thể hoạt động tốt trên một bộ kiểm thử cố định nhưng gặp truy vấn rất khác trong production. Vì vậy, hãy liên tục cập nhật test set với edge case mới và ví dụ phản ánh kịch bản thực tế. Kết hợp các case "smoke test" nhỏ và bộ Evaluation lớn hơn sẽ hữu ích: bộ nhỏ để kiểm tra nhanh, bộ lớn cho metrics hiệu suất rộng hơn.
+
+### 🔄 Online Evaluation 
+
+Đây là đánh giá Agent trong môi trường thực tế, trực tiếp — tức trong quá trình sử dụng thật trên production. Online evaluation gồm theo dõi hiệu suất Agent trên tương tác người dùng thật và phân tích kết quả liên tục.
+
+Ví dụ, theo dõi tỷ lệ thành công, điểm hài lòng người dùng, hoặc metrics khác trên traffic thực. Ưu điểm của online evaluation là nó **nắm bắt những gì có thể không lường trước trong môi trường lab** — quan sát model drift theo thời gian (nếu hiệu quả Agent giảm khi mẫu đầu vào thay đổi) và bắt các truy vấn hoặc tình huống bất ngờ không có trong dữ liệu kiểm thử. Nó mang lại bức tranh thật về cách Agent hành xử ngoài đời.
+
+Online evaluation thường gồm thu thập phản hồi người dùng ẩn và tường minh như đã thảo luận, và có thể chạy shadow tests hoặc A/B tests (một phiên bản Agent mới chạy song song để so sánh với phiên bản cũ). Thách thức là việc có nhãn hoặc điểm đáng tin cậy cho tương tác trực tiếp có thể khó — các bạn có thể dựa vào phản hồi người dùng hoặc metrics downstream (như người dùng có click vào kết quả không).
+
+### 🤝 Kết hợp cả hai
+
+Trong thực tế, Evaluation AI Agent thành công kết hợp **online** và **offline**. Chạy offline benchmarks định kỳ để chấm điểm định lượng Agent trên nhiệm vụ đã định nghĩa, đồng thời theo dõi việc dùng trực tiếp để bắt những gì benchmarks bỏ sót. Ví dụ, offline tests có thể phát hiện tỷ lệ thành công của Agent sinh mã trên một bộ bài đã biết đang cải thiện, trong khi online monitoring cảnh báo người dùng bắt đầu hỏi nhóm câu hỏi mới mà Agent đang gặp khó. Kết hợp cả hai mang lại bức tranh vững chắc hơn.
+
+Thực tế, nhiều đội áp dụng vòng lặp: _offline evaluation → triển khai phiên bản Agent mới → theo dõi online metrics và thu thập ví dụ thất bại mới → thêm các ví dụ đó vào offline test set → lặp lại_. Theo cách này, Evaluation trở thành quá trình liên tục và ngày một tốt hơn.
+
+## 🧑‍💻 Xem cách này hoạt động trong thực tế
+
+Ở phần tiếp theo, ta xem các ví dụ dùng công cụ Observability để theo dõi và đánh giá Agent.

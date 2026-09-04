@@ -1,0 +1,117 @@
+# Quiz nhỏ (không tính điểm) [[quiz1]]
+
+Cho đến nay chúng ta đã thảo luận về các Components và Tools chính dùng trong LlamaIndex.
+Đã đến lúc làm quiz ngắn — vì **tự kiểm tra** là cách tốt nhất để học và [tránh ảo tưởng về năng lực](https://www.coursera.org/lecture/learning-how-to-learn/illusions-of-competence-BuFzf).
+Điều này giúp các bạn tìm ra **chỗ cần củng cố kiến thức**.
+
+Quiz này tùy chọn và không tính điểm.
+
+### Q1: QueryEngine là gì?
+Câu nào sau đây mô tả tốt nhất một QueryEngine Component?
+
+<Question
+choices={[
+{
+text: "Một hệ thống chỉ xử lý text tĩnh, không có khả năng retrieval.",
+explain: "QueryEngine phải truy xuất và xử lý được thông tin liên quan.",
+},
+{
+text: "Một Component tìm và truy xuất thông tin liên quan như một phần của quy trình RAG.",
+explain: "Đúng — đây là mục đích cốt lõi của QueryEngine Component.",
+correct: true
+},
+{
+text: "Một Tool chỉ lưu trữ vector embeddings, không có chức năng tìm kiếm.",
+explain: "QueryEngine làm nhiều hơn chỉ lưu embeddings — nó chủ động tìm kiếm và truy xuất thông tin.",
+},
+{
+text: "Một Component chỉ đánh giá chất lượng phản hồi.",
+explain: "Evaluation tách biệt với mục đích retrieval chính của QueryEngine.",
+}
+]}
+/>
+
+---
+
+### Q2: Mục đích của FunctionTools là gì?
+Vì sao FunctionTools quan trọng đối với một Agent?
+
+<Question
+choices={[
+{
+text: "Để xử lý việc lưu trữ lượng dữ liệu lớn.",
+explain: "FunctionTools không chủ yếu dành cho lưu trữ dữ liệu.",
+},
+{
+text: "Để chuyển Python functions thành Tools mà một Agent dùng được.",
+explain: "FunctionTools wrap Python functions để Agents dùng chúng.",
+correct: true
+},
+{
+text: "Để cho phép Agents tạo các định nghĩa functions ngẫu nhiên.",
+explain: "FunctionTools phục vụ mục đích cụ thể: đưa functions cho Agents dùng.",
+},
+{
+text: "Chỉ để xử lý dữ liệu text.",
+explain: "FunctionTools làm việc với nhiều loại functions khác nhau, không chỉ xử lý text.",
+}
+]}
+/>
+
+---
+
+### Q3: Toolspecs trong LlamaIndex là gì?
+Mục đích chính của Toolspecs là gì?
+
+<Question
+choices={[
+{
+text: "Chúng là Components thừa, không thêm chức năng.",
+explain: "Toolspecs phục vụ mục đích quan trọng trong hệ sinh thái LlamaIndex.",
+},
+{
+text: "Chúng là bộ Tools do cộng đồng tạo ra để mở rộng khả năng của Agent.",
+explain: "Toolspecs cho phép cộng đồng chia sẻ và tái sử dụng Tools.",
+correct: true
+},
+{
+text: "Chúng chỉ dùng cho quản lý bộ nhớ.",
+explain: "Toolspecs liên quan đến việc cung cấp Tools, không phải quản lý bộ nhớ.",
+},
+{
+text: "Chúng chỉ hoạt động với xử lý text.",
+explain: "Toolspecs có thể gồm nhiều loại Tools khác nhau, không chỉ xử lý text.",
+}
+]}
+/>
+
+---
+
+### Q4: Điều gì cần thiết để tạo một Tool?
+Thông tin nào phải có khi tạo một Tool?
+
+<Question
+choices={[
+{
+text: "Phải định nghĩa một function, một name và description.",
+explain: "Dù cả ba tạo nên một Tool, name và description parse được từ function và docstring.",
+},
+{
+text: "Chỉ cần name.",
+explain: "Function và description/docstring cũng cần thiết cho tài liệu Tool đúng cách.",
+},
+{
+text: "Chỉ cần description.",
+explain: "Function là bắt buộc — ta cần code để chạy khi Agent chọn một Tool.",
+},
+{
+text: "Chỉ cần function.",
+explain: "Name và description mặc định lấy từ name và docstring của function được cung cấp.",
+correct: true
+}
+]}
+/>
+
+---
+
+Chúc mừng các bạn đã hoàn thành Quiz này 🥳. Nếu bỏ lỡ một số phần, hãy dành thời gian đọc lại chương để củng cố kiến thức. Nếu vượt qua, các bạn đã sẵn sàng đi sâu hơn vào việc xây dựng với các Components này!

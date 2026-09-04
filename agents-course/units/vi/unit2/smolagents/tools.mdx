@@ -1,0 +1,322 @@
+<CourseFloatingBanner 
+  classNames="absolute z-10 right-0 top-0"
+  notebooks={[
+    {label: "Google Colab", value: "https://colab.research.google.com/#fileId=https://huggingface.co/agents-course/notebooks/blob/main/unit2/smolagents/tools.ipynb"},
+]} 
+askForHelpUrl="http://hf.co/join/discord" />
+
+# Tools
+
+Như đã tìm hiểu trong [Unit 1](https://huggingface.co/learn/agents-course/unit1/tools), Agents dùng Tools để thực hiện nhiều Action khác nhau. Trong `smolagents`, Tools là **các hàm mà LLM gọi trong hệ thống Agent**.
+
+Để tương tác với một Tool, LLM cần **mô tả giao diện** với các thành phần chính sau:
+
+- **Name**: Tên của Tool
+- **Tool description**: Tool làm gì
+- **Input types and descriptions**: Các đối số mà Tool nhận
+- **Output type**: Tool trả về gì
+
+Ví dụ, khi chuẩn bị tiệc tại Wayne Manor, Alfred cần nhiều Tools để thu thập thông tin — từ tìm dịch vụ catering đến ý tưởng chủ đề tiệc. Đây là cách giao diện một Tool tìm kiếm đơn giản có thể trông như thế nào:
+
+- **Name:** `web_search`
+- **Tool description:** Tìm kiếm trên web theo truy vấn cụ thể
+- **Input:** `query` (string) - Từ khóa tìm kiếm
+- **Output:** Chuỗi chứa kết quả tìm kiếm
+
+Nhờ các Tools này, Alfred đưa ra quyết định sáng suốt và thu thập mọi thông tin cần thiết để lập kế hoạch buổi tiệc hoàn hảo.
+
+Dưới đây là animation minh họa cách một tool call được xử lý:
+
+![Agentic pipeline from https://huggingface.co/docs/smolagents/conceptual_guides/react](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/Agent_ManimCE.gif)
+
+## Phương pháp tạo Tools
+
+Trong `smolagents`, Tools định nghĩa theo hai cách:
+1. **Dùng decorator `@tool`** cho các Tool dạng hàm đơn giản
+2. **Tạo subclass của `Tool`** cho chức năng phức tạp hơn
+
+### Decorator `@tool`
+
+Decorator `@tool` là **cách khuyến nghị để định nghĩa các Tool đơn giản**. Bên dưới, smolagents parse thông tin cơ bản về hàm từ Python. Vì vậy nếu các bạn đặt tên hàm rõ ràng và viết docstring tốt, LLM sẽ dễ dùng Tool hơn.
+
+Với cách này, ta định nghĩa một hàm với:
+
+- **Tên hàm rõ ràng, mô tả được** giúp LLM hiểu mục đích của hàm.
+- **Type hints cho cả đầu vào và đầu ra** để đảm bảo sử dụng đúng.
+- **Mô tả chi tiết**, gồm phần `Args:` trong đó mỗi đối số được mô tả rõ. Các mô tả này cung cấp ngữ cảnh quý giá cho LLM, nên cần viết cẩn thận.
+
+#### Tạo Tool lấy dịch vụ catering được đánh giá cao nhất
+
+<img src="https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/smolagents/alfred-catering.jpg" alt="Alfred Catering"/>
+
+> [!TIP]
+> Các bạn có thể theo dõi code trong <a href="https://huggingface.co/agents-course/notebooks/blob/main/unit2/smolagents/tools.ipynb" target="_blank">notebook này</a> và chạy bằng Google Colab.
+
+Hãy tưởng tượng Alfred đã quyết định thực đơn cho buổi tiệc, nhưng giờ cần hỗ trợ chuẩn bị đồ ăn cho số lượng khách lớn. Để làm vậy, cậu muốn thuê dịch vụ catering và cần xác định các lựa chọn được đánh giá cao nhất. Alfred dùng một Tool để tìm các dịch vụ catering tốt nhất trong khu vực.
+
+Dưới đây là ví dụ Alfred dùng decorator `@tool` để thực hiện điều đó:
+
+```python
+from smolagents import CodeAgent, InferenceClientModel, tool
+
+# Let's pretend we have a function that fetches the highest-rated catering services.
+@tool
+def catering_service_tool(query: str) -> str:
+    """
+    This tool returns the highest-rated catering service in Gotham City.
+
+    Args:
+        query: A search term for finding catering services.
+    """
+    # Example list of catering services and their ratings
+    services = {
+        "Gotham Catering Co.": 4.9,
+        "Wayne Manor Catering": 4.8,
+        "Gotham City Events": 4.7,
+    }
+
+    # Find the highest rated catering service (simulating search query filtering)
+    best_service = max(services, key=services.get)
+
+    return best_service
+
+
+agent = CodeAgent(tools=[catering_service_tool], model=InferenceClientModel())
+
+# Run the agent to find the best catering service
+result = agent.run(
+    "Can you give me the name of the highest-rated catering service in Gotham City?"
+)
+
+print(result)   # Output: Gotham Catering Co.
+```
+
+### Định nghĩa Tool dưới dạng Python Class
+
+Cách này gồm việc tạo subclass của [`Tool`](https://huggingface.co/docs/smolagents/v1.8.1/en/reference/tools#smolagents.Tool). Với các Tool phức tạp, ta triển khai một class thay vì hàm Python. Class bao bọc hàm kèm metadata giúp LLM hiểu cách dùng hiệu quả. Trong class này, ta định nghĩa:
+
+- `name`: Tên của Tool.
+- `description`: Mô tả dùng để điền vào system prompt của Agent.
+- `inputs`: Dictionary với các khóa `type` và `description`, cung cấp thông tin giúp Python interpreter xử lý đầu vào.
+- `output_type`: Chỉ định kiểu đầu ra mong đợi.
+- `forward`: Phương thức chứa logic suy luận/thực thi.
+
+Dưới đây là ví dụ Tool được xây bằng `Tool` và cách tích hợp vào `CodeAgent`.
+
+#### Tạo Tool sinh ý tưởng cho tiệc theo chủ đề siêu anh hùng
+
+Buổi tiệc của Alfred tại dinh thự là **sự kiện theo chủ đề siêu anh hùng**, nhưng cậu cần một số ý tưởng sáng tạo để làm tiệc thật đặc biệt. Là host tuyệt vời, cậu muốn bất ngờ khách với chủ đề độc đáo.
+
+Để làm vậy, cậu dùng một Agent sinh ý tưởng tiệc siêu anh hùng dựa trên một category cho trước. Nhờ đó Alfred tìm được chủ đề hoàn hảo để khiến khách bất ngờ.
+
+```python
+from smolagents import Tool, CodeAgent, InferenceClientModel
+
+class SuperheroPartyThemeTool(Tool):
+    name = "superhero_party_theme_generator"
+    description = """
+    This tool suggests creative superhero-themed party ideas based on a category.
+    It returns a unique party theme idea."""
+
+    inputs = {
+        "category": {
+            "type": "string",
+            "description": "The type of superhero party (e.g., 'classic heroes', 'villain masquerade', 'futuristic Gotham').",
+        }
+    }
+
+    output_type = "string"
+
+    def forward(self, category: str):
+        themes = {
+            "classic heroes": "Justice League Gala: Guests come dressed as their favorite DC heroes with themed cocktails like 'The Kryptonite Punch'.",
+            "villain masquerade": "Gotham Rogues' Ball: A mysterious masquerade where guests dress as classic Batman villains.",
+            "futuristic Gotham": "Neo-Gotham Night: A cyberpunk-style party inspired by Batman Beyond, with neon decorations and futuristic gadgets."
+        }
+
+        return themes.get(category.lower(), "Themed party idea not found. Try 'classic heroes', 'villain masquerade', or 'futuristic Gotham'.")
+
+# Instantiate the tool
+party_theme_tool = SuperheroPartyThemeTool()
+agent = CodeAgent(tools=[party_theme_tool], model=InferenceClientModel())
+
+# Run the agent to generate a party theme idea
+result = agent.run(
+    "What would be a good superhero party idea for a 'villain masquerade' theme?"
+)
+
+print(result)  # Output: "Gotham Rogues' Ball: A mysterious masquerade where guests dress as classic Batman villains."
+```
+
+Với Tool này, Alfred sẽ là siêu host tối thượng, khiến khách ấn tượng với buổi tiệc siêu anh hùng khó quên! 🦸‍♂️🦸‍♀️
+
+## Default Toolbox
+
+`smolagents` đi kèm một bộ Tools dựng sẵn có thể inject trực tiếp vào Agent của các bạn. [Default toolbox](https://huggingface.co/docs/smolagents/guided_tour?build-a-tool=Decorate+a+function+with+%40tool#default-toolbox) bao gồm:
+
+- **PythonInterpreterTool**
+- **FinalAnswerTool**
+- **UserInputTool**
+- **DuckDuckGoSearchTool**
+- **GoogleSearchTool**
+- **VisitWebpageTool**
+
+Alfred dùng nhiều Tools để đảm bảo buổi tiệc tại Wayne Manor diễn ra hoàn hảo:
+
+- Đầu tiên, cậu dùng `DuckDuckGoSearchTool` để tìm ý tưởng tiệc siêu anh hùng sáng tạo.
+
+- Về catering, cậu dựa vào `GoogleSearchTool` để tìm các dịch vụ được đánh giá cao nhất ở Gotham.
+
+- Để quản lý chỗ ngồi, Alfred chạy tính toán với `PythonInterpreterTool`.
+
+- Khi mọi thứ đã sẵn sàng, cậu tổng hợp kế hoạch bằng `FinalAnswerTool`.
+
+Với các Tools này, Alfred đảm bảo buổi tiệc vừa đặc biệt vừa suôn sẻ. 🦇💡
+
+## Chia sẻ và Import Tools
+
+Một tính năng mạnh của **smolagents** là chia sẻ Tools tùy chỉnh lên Hub và tích hợp Tools do cộng đồng tạo ra. Điều này gồm kết nối với **HF Spaces** và **LangChain tools**, nâng đáng kể khả năng của Alfred trong việc điều phối buổi tiệc tại Wayne Manor. 🎭
+
+Với các tích hợp này, Alfred tận dụng Tools lập kế hoạch sự kiện nâng cao — chỉnh ánh sáng cho không khí phù hợp, chọn playlist lý tưởng, hay phối hợp với các nhà catering hàng đầu của Gotham.
+
+Dưới đây là các ví dụ cho thấy những chức năng này nâng tầm trải nghiệm tiệc như thế nào:
+
+### Chia sẻ Tool lên Hub
+
+Chia sẻ Tool tùy chỉnh với cộng đồng rất dễ! Chỉ cần upload lên tài khoản Hugging Face bằng phương thức `push_to_hub()`.
+
+Ví dụ, Alfred chia sẻ `party_theme_tool` để giúp người khác tìm dịch vụ catering tốt nhất ở Gotham. Cách làm như sau:
+
+```python
+party_theme_tool.push_to_hub("{your_username}/party_theme_tool", token="<YOUR_HUGGINGFACEHUB_API_TOKEN>")
+```
+
+### Import Tool từ Hub
+
+Các bạn dễ dàng import Tools do người dùng khác tạo bằng hàm `load_tool()`. Ví dụ, Alfred muốn tạo ảnh quảng bá cho buổi tiệc bằng AI. Thay vì xây Tool từ đầu, cậu tận dụng một Tool có sẵn từ cộng đồng:
+
+```python
+from smolagents import load_tool, CodeAgent, InferenceClientModel
+
+image_generation_tool = load_tool(
+    "m-ric/text-to-image",
+    trust_remote_code=True
+)
+
+agent = CodeAgent(
+    tools=[image_generation_tool],
+    model=InferenceClientModel()
+)
+
+agent.run("Generate an image of a luxurious superhero-themed party at Wayne Manor with made-up superheros.")
+```
+
+### Import một Hugging Face Space như một Tool
+
+Các bạn cũng import một HF Space như một Tool bằng `Tool.from_space()`. Điều này mở ra khả năng tích hợp với hàng nghìn Spaces từ cộng đồng cho các tác vụ từ sinh ảnh đến phân tích dữ liệu.
+
+Tool sẽ kết nối với Gradio backend của Space thông qua `gradio_client`, nên hãy cài bằng `pip` nếu các bạn chưa có.
+
+Cho buổi tiệc, Alfred dùng một HF Space có sẵn để sinh ảnh AI dùng trong thông báo (thay vì Tool dựng sẵn đã đề cập trước đó). Hãy xây nó!
+
+```python
+from smolagents import CodeAgent, InferenceClientModel, Tool
+
+image_generation_tool = Tool.from_space(
+    "black-forest-labs/FLUX.1-schnell",
+    name="image_generator",
+    description="Generate an image from a prompt"
+)
+
+model = InferenceClientModel("Qwen/Qwen2.5-Coder-32B-Instruct")
+
+agent = CodeAgent(tools=[image_generation_tool], model=model)
+
+agent.run(
+    "Improve this prompt, then generate an image of it.",
+    additional_args={'user_prompt': 'A grand superhero-themed party at Wayne Manor, with Alfred overseeing a luxurious gala'}
+)
+```
+
+### Import một LangChain Tool
+
+
+Chúng ta sẽ thảo luận framework `LangChain` ở các phần tới. Hiện tại, chỉ cần biết rằng ta tái sử dụng LangChain tools trong workflow smolagents!
+
+Các bạn load LangChain tools bằng phương thức `Tool.from_langchain()`. Alfred, luôn là người cầu toàn, đang chuẩn bị một đêm siêu anh hùng hoành tráng tại Wayne Manor trong lúc gia đình Wayne vắng nhà. Để mọi chi tiết vượt kỳ vọng, cậu tận dụng LangChain tools để tìm ý tưởng giải trí hàng đầu.
+
+Bằng `Tool.from_langchain()`, Alfred dễ dàng thêm chức năng tìm kiếm nâng cao vào smolagent, giúp phát hiện ý tưởng và dịch vụ tiệc độc quyền chỉ với vài lệnh.
+
+Cách cậu làm như sau:
+
+Trước tiên cần cài tích hợp `langchain` cho `smolagents`.
+
+```bash
+pip install -U langchain-community
+```
+
+Sau khi cài tích hợp langchain, hãy đặt SerpAPI key.
+Điều này bắt buộc với các Tools dựa trên tìm kiếm như `SerpAPITool`:
+
+```python
+os.environ['SERPAPI_API_KEY'] = '...'
+```
+
+Các bạn có thể tạo SerpAPI key [tại đây](https://serpapi.com/)
+
+```python
+from langchain.agents import load_tools
+from smolagents import CodeAgent, InferenceClientModel, Tool
+
+search_tool = Tool.from_langchain(load_tools(["serpapi"])[0])
+
+agent = CodeAgent(tools=[search_tool], model=model)
+
+agent.run("Search for luxury entertainment ideas for a superhero-themed event, such as live performances and interactive experiences.")
+```
+
+### Import một bộ Tools từ bất kỳ MCP server nào
+
+`smolagents` cũng cho phép import Tools từ hàng trăm MCP servers có trên [glama.ai](https://glama.ai/mcp/servers) hoặc [smithery.ai](https://smithery.ai). Nếu muốn tìm hiểu sâu hơn về MCP, các bạn có thể xem [khóa học MCP miễn phí](https://huggingface.co/learn/mcp-course/) của chúng tôi. 
+
+<details>
+<summary>Cài mcp client</summary>
+
+Trước tiên cần cài tích hợp `mcp` cho `smolagents`.
+
+```bash
+pip install "smolagents[mcp]"
+```
+</details>
+
+Các Tools từ MCP servers được load vào một đối tượng ToolCollection như sau:
+
+```python
+import os
+from smolagents import ToolCollection, CodeAgent
+from mcp import StdioServerParameters
+from smolagents import InferenceClientModel
+
+
+model = InferenceClientModel("Qwen/Qwen2.5-Coder-32B-Instruct")
+
+
+server_parameters = StdioServerParameters(
+    command="uvx",
+    args=["--quiet", "pubmedmcp@0.1.3"],
+    env={"UV_PYTHON": "3.12", **os.environ},
+)
+
+with ToolCollection.from_mcp(server_parameters, trust_remote_code=True) as tool_collection:
+    agent = CodeAgent(tools=[*tool_collection.tools], model=model, add_base_tools=True)
+    agent.run("Please find a remedy for hangover.")
+```
+
+Với thiết lập này, Alfred nhanh chóng tìm các lựa chọn giải trí sang trọng, đảm bảo khách quý của Gotham có trải nghiệm khó quên. Tool này giúp cậu chọn lọc sự kiện siêu anh hùng hoàn hảo cho Wayne Manor! 🎉
+
+## Tài nguyên
+
+- [Tools Tutorial](https://huggingface.co/docs/smolagents/tutorials/tools) - Tutorial này giúp các bạn làm việc hiệu quả với Tools.
+- [Tools Documentation](https://huggingface.co/docs/smolagents/v1.8.1/en/reference/tools) - Tài liệu tham chiếu toàn diện về Tools.
+- [Tools Guided Tour](https://huggingface.co/docs/smolagents/v1.8.1/en/guided_tour#tools) - Tour hướng dẫn từng bước giúp các bạn xây và sử dụng Tools hiệu quả.
+- [Building Effective Agents](https://huggingface.co/docs/smolagents/tutorials/building_good_agents) - Hướng dẫn chi tiết về best practices để phát triển các Agent hàm tùy chỉnh đáng tin cậy và hiệu năng cao.

@@ -1,0 +1,70 @@
+# GAIA là gì?
+
+[GAIA](https://huggingface.co/papers/2311.12983) là **benchmark đánh giá trợ lý AI trên các nhiệm vụ thực tế** đòi hỏi kết hợp các khả năng cốt lõi — lập luận, hiểu đa phương thức, duyệt web và dùng Tools thành thạo.
+
+Nó được giới thiệu trong bài báo _"[GAIA: A Benchmark for General AI Assistants](https://huggingface.co/papers/2311.12983)"_.
+
+Benchmark gồm **466 câu hỏi được tuyển chọn**, **đơn giản về khái niệm với con người**, nhưng **rất khó với các hệ thống AI hiện tại**. 
+
+Để minh họa khoảng cách:
+- **Con người**: tỷ lệ thành công ~92%  
+- **GPT-4 với plugins**: ~15%  
+- **Deep Research (OpenAI)**: 67.36% trên tập validation
+
+GAIA làm nổi bật hạn chế hiện tại của các model AI và cung cấp một benchmark chặt để đo tiến độ hướng tới trợ lý AI đa năng thực sự.
+
+## 🌱 Các nguyên tắc cốt lõi của GAIA
+
+GAIA được thiết kế quanh các trụ cột sau:
+
+- 🔍 **Độ khó thực tế**: Nhiệm vụ đòi hỏi lập luận nhiều bước, hiểu đa phương thức và tương tác với Tools.
+- 🧾 **Dễ hiểu với con người**: Dù khó với AI, nhiệm vụ vẫn đơn giản về khái niệm và dễ theo dõi với con người.
+- 🛡️ **Khó gian lận**: Câu trả lời đúng đòi hỏi thực thi đầy đủ nhiệm vụ — brute-force không hiệu quả.
+- 🧰 **Đơn giản trong evaluation**: Đáp án ngắn gọn, mang tính sự kiện và không mơ hồ — lý tưởng cho benchmarking.
+
+## Các mức độ khó
+
+Các nhiệm vụ GAIA được tổ chức thành **ba mức độ phức tạp tăng dần**, mỗi mức kiểm tra kỹ năng cụ thể:
+
+- **Level 1**: Ít hơn 5 bước và dùng Tools tối thiểu.
+- **Level 2**: Lập luận phức tạp hơn, phối hợp nhiều Tools cùng 5–10 bước.
+- **Level 3**: Lập kế hoạch dài hạn và tích hợp nâng cao nhiều Tools.
+
+![GAIA levels](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit4/gaia_levels.png)
+
+## Ví dụ về một câu hỏi GAIA khó
+
+> Which of the fruits shown in the 2008 painting "Embroidery from Uzbekistan" were served as part of the October 1949 breakfast menu for the ocean liner that was later used as a floating prop for the film "The Last Voyage"? Give the items as a comma-separated list, ordering them in clockwise order based on their arrangement in the painting starting from the 12 o'clock position. Use the plural form of each fruit.
+
+Như các bạn thấy, câu hỏi này thách thức hệ thống AI theo nhiều cách:
+
+- Yêu cầu **định dạng phản hồi có cấu trúc**
+- Liên quan đến **lập luận đa phương thức** (ví dụ: phân tích hình ảnh)
+- Đòi hỏi **truy xuất multi-hop** các sự kiện phụ thuộc lẫn nhau:
+  - Nhận diện các loại trái cây trong bức tranh
+  - Tìm ra tàu đại dương nào được dùng trong *The Last Voyage*
+  - Tra cứu thực đơn bữa sáng tháng 10 năm 1949 của con tàu đó
+- Cần **trình tự đúng** và lập kế hoạch ở mức cao để giải theo đúng thứ tự
+
+Loại nhiệm vụ này làm nổi bật nơi LLM độc lập thường thất bại, khiến GAIA trở thành benchmark lý tưởng cho **các hệ thống dựa trên Agent** có thể lập luận, truy xuất và thực thi qua nhiều bước và phương thức.
+
+![GAIA capabilities plot](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit4/gaia_capabilities.png)
+
+## Đánh giá trực tiếp
+
+Để khuyến khích benchmarking liên tục, **GAIA cung cấp leaderboard công khai được host trên Hugging Face**, nơi các bạn có thể kiểm thử model với **300 câu hỏi kiểm tra**.
+
+👉 Xem leaderboard [tại đây](https://huggingface.co/spaces/gaia-benchmark/leaderboard)
+
+<iframe
+	src="https://gaia-benchmark-leaderboard.hf.space"
+	frameborder="0"
+	width="850"
+	height="450"
+></iframe>
+
+Muốn đi sâu hơn về GAIA?
+
+- 📄 [Đọc toàn bộ bài báo](https://huggingface.co/papers/2311.12983)
+- 📄 [Bài đăng phát hành Deep Research của OpenAI](https://openai.com/index/introducing-deep-research/)
+- 📄 [Open-source DeepResearch – Freeing our search agents](https://huggingface.co/blog/open-deep-research)

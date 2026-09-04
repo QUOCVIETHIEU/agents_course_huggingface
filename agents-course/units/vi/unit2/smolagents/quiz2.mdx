@@ -1,0 +1,147 @@
+# Kiểm tra nhanh (không chấm điểm) [[quiz2]]
+
+Đến lúc kiểm tra hiểu biết của các bạn về các phần *Code Agents*, *Tool Calling Agents*, và *Tools*. Quiz này là tùy chọn và không chấm điểm.
+
+---
+
+### Q1: Sự khác biệt chính giữa tạo Tool bằng decorator `@tool` và tạo subclass của `Tool` trong smolagents là gì?
+
+Phát biểu nào mô tả tốt nhất sự khác biệt giữa hai cách định nghĩa Tools?
+
+<Question
+choices={[
+  {
+    text: "Dùng decorator <code>@tool</code> là bắt buộc với Tools dựa trên retrieval, trong khi subclass của <code>Tool</code> chỉ dành cho các tác vụ sinh văn bản",
+    explain: "Cả hai cách đều có thể dùng cho mọi loại Tool, gồm cả Tools dựa trên retrieval hoặc sinh văn bản.",
+  },
+  {
+    text: "Decorator <code>@tool</code> được khuyến nghị cho Tools dạng hàm đơn giản, trong khi subclass của <code>Tool</code> linh hoạt hơn cho chức năng phức tạp hoặc metadata tùy chỉnh",
+    explain: "Đúng. Cách dùng decorator đơn giản hơn, nhưng subclassing cho phép hành vi tùy chỉnh nhiều hơn.",
+    correct: true
+  },
+  {
+    text: "<code>@tool</code> chỉ dùng được trong hệ thống Multi-Agent, trong khi tạo subclass <code>Tool</code> dành cho kịch bản single-agent",
+    explain: "Mọi Agent (single hoặc multi) đều có thể dùng một trong hai cách để định nghĩa Tools; không có hạn chế như vậy.",
+  },
+  {
+    text: "Decorate một hàm bằng <code>@tool</code> thay thế nhu cầu có docstring, trong khi subclass không được chứa docstring",
+    explain: "Cả hai cách đều hưởng lợi từ docstring rõ ràng. Decorator không thay thế docstring, và subclass vẫn có thể có docstring.",
+  }
+]}
+/>
+
+---
+
+### Q2: CodeAgent xử lý các tác vụ nhiều bước bằng cách tiếp cận ReAct (Reason + Act) như thế nào?
+
+Phát biểu nào mô tả đúng cách CodeAgent thực thi một chuỗi bước để giải quyết tác vụ?
+
+<Question
+choices={[
+  {
+    text: "Nó chuyển mỗi bước cho một Agent khác trong hệ thống Multi-Agent, rồi kết hợp kết quả",
+    explain: "Dù hệ thống Multi-Agent có thể phân phối tác vụ, bản thân CodeAgent có thể tự xử lý nhiều bước bằng ReAct.",
+  },
+  {
+    text: "Nó lưu mọi hành động dưới dạng JSON để dễ parse trước khi thực thi tất cả cùng lúc",
+    explain: "Hành vi này khớp với cách tiếp cận dựa trên JSON của ToolCallingAgent, không phải CodeAgent.",
+  },
+  {
+    text: "Nó lặp qua việc viết suy nghĩ nội bộ, sinh code Python, thực thi code, và ghi log kết quả cho đến khi đạt được câu trả lời cuối",
+    explain: "Đúng. Đây mô tả pattern ReAct mà CodeAgent dùng, gồm lập luận lặp và thực thi code.",
+    correct: true
+  },
+  {
+    text: "Nó dựa vào module Vision để xác thực đầu ra code trước khi tiếp tục bước tiếp theo",
+    explain: "Khả năng Vision được hỗ trợ trong smolagents, nhưng chúng không phải yêu cầu mặc định của CodeAgent hay cách tiếp cận ReAct.",
+  }
+]}
+/>
+
+---
+
+### Q3: Đâu là lợi thế chính khi chia sẻ một Tool lên Hugging Face Hub?
+
+Chọn lý do tốt nhất vì sao một developer có thể upload và chia sẻ Tool tùy chỉnh của mình.
+
+<Question
+choices={[
+  {
+    text: "Nó tự động tích hợp Tool với MultiStepAgent cho retrieval-augmented generation",
+    explain: "Chia sẻ Tool không tự động thiết lập retrieval hay logic multi-step — chỉ giúp Tool sẵn sàng để dùng.",
+  },
+  {
+    text: "Nó cho phép người khác tìm thấy, tái sử dụng và tích hợp Tool của các bạn vào smolagents mà không cần setup thêm",
+    explain: "Đúng. Chia sẻ trên Hub giúp Tools dễ truy cập để bất kỳ ai (kể cả các bạn) tải xuống và tái sử dụng nhanh chóng.",
+    correct: true
+  },
+  {
+    text: "Nó đảm bảo chỉ CodeAgents có thể gọi Tool trong khi ToolCallingAgents thì không",
+    explain: "Cả CodeAgents và ToolCallingAgents đều có thể gọi Tools đã chia sẻ. Không có hạn chế theo loại Agent.",
+  },
+  {
+    text: "Nó chuyển Tool của các bạn thành hàm có đầy đủ khả năng Vision cho xử lý ảnh",
+    explain: "Chia sẻ Tool không thay đổi chức năng của Tool hay tự động thêm khả năng Vision.",
+  }
+]}
+/>
+
+---
+
+### Q4: ToolCallingAgent khác CodeAgent ở cách thực thi hành động. Phát biểu nào đúng?
+
+Chọn phương án mô tả chính xác cách ToolCallingAgent hoạt động.
+
+<Question
+choices={[
+  {
+    text: "ToolCallingAgent chỉ tương thích với hệ thống Multi-Agent, trong khi CodeAgent có thể chạy một mình",
+    explain: "Cả hai loại Agent đều có thể dùng một mình hoặc như một phần của hệ thống Multi-Agent.",
+  },
+  {
+    text: "ToolCallingAgent ủy thác toàn bộ lập luận cho một retrieval Agent riêng, rồi trả về câu trả lời cuối",
+    explain: "ToolCallingAgent vẫn dùng LLM chính để lập luận; nó không chỉ dựa vào retrieval Agents.",
+  },
+  {
+    text: "ToolCallingAgent xuất hướng dẫn JSON chỉ định các lệnh gọi Tool và đối số, rồi chúng được parse và thực thi",
+    explain: "Đúng. ToolCallingAgent dùng cách tiếp cận JSON để định nghĩa các lệnh gọi Tool.",
+    correct: true
+  },
+  {
+    text: "ToolCallingAgent chỉ dành cho tác vụ một bước và tự động dừng sau khi gọi một Tool",
+    explain: "ToolCallingAgent có thể thực hiện nhiều bước nếu cần, giống như CodeAgent.",
+  }
+]}
+/>
+
+---
+
+### Q5: Default toolbox của smolagents gồm những gì, và vì sao các bạn có thể dùng nó?
+
+Phát biểu nào nắm bắt tốt nhất mục đích và nội dung của default toolbox trong smolagents?
+
+<Question
+choices={[
+  {
+    text: "Nó cung cấp một bộ Tools dùng phổ biến như DuckDuckGo search, PythonInterpreterTool, và một Tool câu trả lời cuối để prototype nhanh",
+    explain: "Đúng. Default toolbox chứa các Tools sẵn có này để tích hợp dễ dàng khi xây Agents.",
+    correct: true
+  },
+  {
+    text: "Nó chỉ hỗ trợ các tác vụ dựa trên Vision như phân loại ảnh hoặc OCR theo mặc định",
+    explain: "Dù smolagents có thể tích hợp tính năng dựa trên Vision, default toolbox không chỉ hướng về Vision.",
+  },
+  {
+    text: "Nó chỉ dành cho hệ thống Multi-Agent và không tương thích với một CodeAgent đơn lẻ",
+    explain: "Mọi loại Agent đều dùng được default toolbox, cả thiết lập single lẫn Multi-Agent.",
+  },
+  {
+    text: "Nó thêm chức năng retrieval nâng cao cho hỏi đáp quy mô lớn từ vector store",
+    explain: "Dù các bạn có thể xây retrieval Tools, default toolbox không tự động cung cấp các tính năng RAG nâng cao.",
+  }
+]}
+/>
+
+---
+
+Chúc mừng các bạn đã hoàn thành quiz này! 🎉 Nếu câu nào khiến các bạn khó khăn, hãy xem lại các phần *Code Agents*, *Tool Calling Agents*, hoặc *Tools* để củng cố hiểu biết. Nếu làm tốt, các bạn đang trên đường xây dựng các ứng dụng smolagents vững chắc!

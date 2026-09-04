@@ -1,0 +1,66 @@
+# Giới thiệu về `smolagents`
+
+<img src="https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/smolagents/thumbnail.jpg" alt="Thumbnail Unit 2.1"/>
+
+Chào mừng các bạn đến với module này. **Đến cuối phần này, các bạn sẽ biết cách xây Agents hiệu quả** bằng thư viện [`smolagents`](https://github.com/huggingface/smolagents) — framework nhẹ để tạo AI Agents có năng lực.
+
+`smolagents` là thư viện của Hugging Face; hãy **star** [`repository`](https://github.com/huggingface/smolagents) để ủng hộ:
+<img src="https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/smolagents/star_smolagents.gif" alt="star smolagents"/>
+
+## Tổng quan module
+
+Module này trình bày các khái niệm then chốt và chiến lược thực tiễn để xây Agents bằng `smolagents`.
+
+Với nhiều open-source framework sẵn có, các bạn cần hiểu thành phần và khả năng của `smolagents` — và khi nào giải pháp khác phù hợp hơn.
+
+Chúng ta sẽ đi qua các loại Agent chính: Code Agents cho tác vụ phát triển phần mềm, Tool-Calling Agents cho workflow mô-đun dựa trên hàm, và Retrieval Agents để truy cập cùng tổng hợp thông tin.
+
+Ngoài ra, ta sẽ điều phối nhiều Agents, tích hợp Vision và duyệt web — mở rộng ứng dụng động, nhận biết ngữ cảnh.
+
+Trong Unit này, Alfred — Agent từ Unit 1 — trở lại. Lần này cậu ấy dùng framework `smolagents` cho phần vận hành bên trong. Cùng nhau, ta sẽ nắm các khái niệm then chốt khi Alfred xử lý nhiều tác vụ. Alfred đang tổ chức tiệc tại Wayne Manor lúc gia đình Wayne 🦇 vắng nhà, và cậu ấy có rất nhiều việc phải làm. Hãy theo dõi hành trình của cậu ấy với `smolagents`!
+
+> [!TIP]
+> Trong Unit này, các bạn sẽ xây AI Agents bằng thư viện `smolagents`. Agents của các bạn sẽ tìm kiếm dữ liệu, thực thi code và tương tác với trang web. Các bạn cũng sẽ kết hợp nhiều Agents để tạo hệ thống mạnh hơn.
+
+![Alfred the agent](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit1/this-is-alfred.jpg)
+
+## Nội dung
+
+Trong Unit về `smolagents` này, chúng ta sẽ tìm hiểu:
+
+### 1️⃣ [Tại sao dùng smolagents](./why_use_smolagents)
+
+`smolagents` là một trong nhiều open-source agent frameworks để phát triển ứng dụng. Các lựa chọn khác gồm `LlamaIndex` và `LangGraph`, cũng được đề cập trong khóa học. `smolagents` có một số tính năng then chốt phù hợp với use case cụ thể — nhưng ta luôn nên cân nhắc mọi lựa chọn khi chọn framework. Phần này nêu ưu và nhược điểm của `smolagents` để các bạn quyết định theo yêu cầu dự án.
+
+### 2️⃣ [CodeAgents](./code_agents)
+
+`CodeAgents` là loại Agent chính trong `smolagents`. Thay vì sinh JSON hoặc văn bản, các Agents này sinh code Python để thực hiện Action. Phần này nêu mục đích, cách hoạt động, kèm ví dụ thực hành.
+
+### 3️⃣ [ToolCallingAgents](./tool_calling_agents)
+
+`ToolCallingAgents` là loại Agent thứ hai mà `smolagents` hỗ trợ. Khác `CodeAgents` sinh code Python, các Agents này dựa vào blob JSON/văn bản — hệ thống phải parse và diễn giải để thực thi Action. Phần này nêu chức năng, khác biệt so với `CodeAgents`, và một ví dụ minh họa.
+
+### 4️⃣ [Tools](./tools)
+
+Như đã thấy ở Unit 1, Tools là các hàm mà LLM gọi trong hệ thống agentic — khối xây dựng thiết yếu cho hành vi Agent. Phần này nêu cách tạo Tools, cấu trúc, và cách triển khai bằng lớp `Tool` hoặc decorator `@tool`. Các bạn cũng sẽ biết toolbox mặc định, cách chia sẻ Tools với cộng đồng, và cách tải Tools do cộng đồng đóng góp.
+
+### 5️⃣ [Retrieval Agents](./retrieval_agents)
+
+Retrieval Agents cho mô hình truy cập knowledge bases — tìm kiếm, tổng hợp và truy xuất thông tin từ nhiều nguồn. Chúng dùng vector stores để truy xuất hiệu quả và triển khai mẫu **Retrieval-Augmented Generation (RAG)**. Các Agents này hữu ích khi kết hợp web search với knowledge bases tùy chỉnh, đồng thời giữ ngữ cảnh hội thoại qua hệ thống memory. Phần này nêu chiến lược triển khai, gồm cơ chế fallback để truy xuất vững chắc.
+
+### 6️⃣ [Hệ thống Multi-Agent](./multi_agent_systems)
+
+Điều phối nhiều Agents hiệu quả là then chốt để xây hệ thống Multi-Agent. Kết hợp Agents với khả năng khác nhau — ví dụ web search Agent với code execution Agent — giúp tạo giải pháp tinh vi hơn. Phần này tập trung thiết kế, triển khai và quản lý hệ thống Multi-Agent để tối ưu hiệu quả và độ tin cậy.
+
+### 7️⃣ [Vision và Browser Agents](./vision_agents)
+
+Vision Agents mở rộng khả năng Agent truyền thống bằng **Vision-Language Models (VLMs)** — xử lý và diễn giải thông tin hình ảnh. Phần này nêu cách thiết kế và tích hợp Agents dùng VLM: lập luận dựa trên hình ảnh, phân tích dữ liệu trực quan, tương tác đa phương thức. Ta cũng sẽ dùng Vision Agents để xây Browser Agent duyệt web và trích xuất thông tin.
+
+## Tài nguyên
+
+- [smolagents Documentation](https://huggingface.co/docs/smolagents) - Tài liệu chính thức của thư viện smolagents
+- [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) - Bài nghiên cứu về kiến trúc Agent
+- [Agent Guidelines](https://huggingface.co/docs/smolagents/tutorials/building_good_agents) - Best practices để xây Agents đáng tin cậy
+- [LangGraph Agents](https://langchain-ai.github.io/langgraph/) - Thêm ví dụ về triển khai Agent
+- [Function Calling Guide](https://platform.openai.com/docs/guides/function-calling) - Hiểu Function Calling trong LLMs
+- [RAG Best Practices](https://www.pinecone.io/learn/retrieval-augmented-generation/) - Hướng dẫn triển khai RAG hiệu quả

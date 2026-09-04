@@ -1,0 +1,52 @@
+# Thực hành
+
+Giờ khi các bạn sẵn sàng đi sâu vào Agent cuối cùng, hãy xem cách gửi bài để chấm điểm.
+
+## Dataset 
+
+Dataset dùng trong leaderboard này gồm 20 câu hỏi trích từ các câu hỏi level 1 của tập **validation** từ GAIA. 
+
+Các câu hỏi được lọc theo số Tools và số bước cần thiết để trả lời.
+
+Dựa trên tình hình hiện tại của GAIA benchmark, chúng tôi cho rằng mục tiêu 30% trên câu hỏi level 1 là bài kiểm tra hợp lý.
+
+<img src="https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit4/leaderboard%20GAIA%2024%3A04%3A2025.png" alt="GAIA current status!" />
+
+## Quy trình 
+
+Câu hỏi lớn lúc này chắc là: "Làm sao để bắt đầu nộp bài?"
+
+Cho Unit này, chúng tôi đã tạo một API để lấy câu hỏi và gửi câu trả lời để chấm điểm.
+Dưới đây là tóm tắt các routes (xem [tài liệu trực tiếp](https://agents-course-unit4-scoring.hf.space/docs) để biết chi tiết tương tác):
+
+* **`GET /questions`**: Lấy danh sách đầy đủ các câu hỏi evaluation đã lọc.
+* **`GET /random-question`**: Lấy một câu hỏi ngẫu nhiên từ danh sách.
+* **`GET /files/{task_id}`**: Tải xuống file gắn với task ID nhất định.
+* **`POST /submit`**: Gửi câu trả lời của Agent, tính điểm và cập nhật leaderboard.
+
+Hàm submit so sánh câu trả lời với ground truth theo kiểu **EXACT MATCH**, nên hãy prompt thật tốt! Đội ngũ GAIA đã chia sẻ ví dụ prompting cho Agent [tại đây](https://huggingface.co/spaces/gaia-benchmark/leaderboard) (vì mục đích khóa học này, đừng đưa chữ "FINAL ANSWER" vào bài nộp — chỉ để Agent trả lời bằng đáp án và không gì khác).
+
+🎨 **Hãy biến Template thành của riêng bạn!**
+
+Để minh họa quy trình tương tác với API, chúng tôi kèm một [template cơ bản](https://huggingface.co/spaces/agents-course/Final_Assignment_Template) làm điểm khởi đầu.
+
+Các bạn **được khuyến khích** thay đổi, bổ sung hoặc tái cấu trúc hoàn toàn! Sửa theo bất kỳ cách nào phù hợp với cách tiếp cận và sự sáng tạo của mình.
+
+Để nộp bài, template này tính toán 3 thứ mà API cần:
+
+* **Username:** Username Hugging Face của bạn (ở đây lấy qua đăng nhập Gradio), dùng để nhận diện bài nộp.
+* **Code Link (`agent_code`):** URL liên kết đến mã nguồn Hugging Face Space của bạn (`.../tree/main`) cho mục đích xác minh — hãy giữ Space ở chế độ công khai.
+* **Answers (`answers`):** Danh sách phản hồi (`{"task_id": ..., "submitted_answer": ...}`) do Agent tạo ra để chấm điểm.
+
+Vì vậy, hãy bắt đầu bằng cách nhân bản [template](https://huggingface.co/spaces/agents-course/Final_Assignment_Template) này lên profile Hugging Face của riêng bạn.
+
+🏆 Xem leaderboard [tại đây](https://huggingface.co/spaces/agents-course/Students_leaderboard)
+
+*Lưu ý thân thiện: Leaderboard này nhằm mục đích vui! Chúng tôi biết có thể nộp điểm mà không xác minh đầy đủ. Nếu thấy quá nhiều điểm cao được đăng mà không có liên kết công khai để đối chiếu, chúng tôi có thể xem xét, điều chỉnh hoặc gỡ một số mục để giữ leaderboard hữu ích.*
+Leaderboard sẽ hiển thị liên kết đến codebase Space của bạn; vì leaderboard này chỉ dành cho học viên, hãy giữ Space công khai nếu đạt điểm mà mình tự hào.
+<iframe
+	src="https://agents-course-students-leaderboard.hf.space"
+	frameborder="0"
+	width="850"
+	height="450"
+></iframe>

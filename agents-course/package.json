@@ -1,0 +1,9 @@
+{
+  "name": "agents-course-learn",
+  "private": true,
+  "description": "Local/offline learning UI for Hugging Face Agents Course (cloned content)",
+  "scripts": {
+    "build": "python3 build_preview_vi.py",
+    "preview": "python3 -m http.server 8765 --directory preview-vi"
+  }
+}

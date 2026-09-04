@@ -1,0 +1,30 @@
+# Giới thiệu về LlamaIndex
+
+Chào mừng các bạn đến với module này. Ở đây ta học cách xây dựng Agents dựa trên LLM bằng bộ công cụ [LlamaIndex](https://www.llamaindex.ai/).
+
+LlamaIndex là **bộ công cụ đầy đủ để tạo Agents dựa trên LLM trên dữ liệu của bạn, dùng indexes và Workflows**. Trong khóa học này, chúng ta tập trung vào ba phần chính để xây dựng Agents trong LlamaIndex: **Components**, **Agents and Tools** và **Workflows**.
+
+![LlamaIndex](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/llama-index/thumbnail.png)
+
+Hãy xem các phần then chốt này của LlamaIndex và vai trò của chúng với Agents:
+
+- **Components**: Các khối xây dựng cơ bản trong LlamaIndex — prompts, models, databases, v.v. Components thường kết nối LlamaIndex với các công cụ và thư viện khác.
+- **Tools**: Components cung cấp khả năng cụ thể như tìm kiếm, tính toán hoặc truy cập dịch vụ bên ngoài. Chúng là khối xây dựng để Agents thực hiện nhiệm vụ.
+- **Agents**: Components tự chủ — gọi Tools và đưa quyết định. Chúng điều phối việc dùng Tools để hoàn thành mục tiêu phức tạp.
+- **Workflows**: Quy trình từng bước ghép logic xử lý. Workflows (hay agentic workflows) cấu trúc hành vi agentic mà không cần dùng Agents tường minh.
+
+
+## Điểm nổi bật của LlamaIndex
+
+LlamaIndex làm một số việc tương tự các framework khác như smolagents, nhưng có vài lợi thế chính:
+
+- **Hệ thống Workflow rõ ràng**: Workflows tách cách Agents đưa quyết định từng bước bằng cú pháp event-driven và ưu tiên async. Ta soạn và tổ chức logic rõ ràng hơn.
+- **Phân tích tài liệu nâng cao với LlamaParse**: LlamaParse được tạo riêng cho LlamaIndex nên tích hợp liền mạch (tính năng trả phí).
+- **Nhiều Components sẵn dùng**: LlamaIndex đã tồn tại lâu và tương thích nhiều framework khác. Có nhiều Components đã kiểm thử, đáng tin cậy — LLMs, retrievers, indexes, v.v.
+- **LlamaHub**: Registry của hàng trăm Components, Agents và Tools dùng trong LlamaIndex.
+
+Các khái niệm này cần thiết trong nhiều tình huống để tạo Agents hữu ích.
+Ở các phần tiếp theo, chúng ta đi sâu từng khái niệm.
+Sau khi nắm vững, ta dùng kiến thức đã học để **xây dựng các use case thực tế với Alfred the Agent**!
+
+Sẵn sàng chưa? Hãy bắt đầu bằng **tìm và cài các integrations cần thiết qua LlamaHub! 🚀**

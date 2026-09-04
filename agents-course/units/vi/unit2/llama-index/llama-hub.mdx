@@ -1,0 +1,56 @@
+# Giới thiệu về LlamaHub
+
+**LlamaHub là registry của hàng trăm integrations, Agents và Tools dùng trong LlamaIndex.**
+
+![LlamaHub](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/llama-index/llama-hub.png)
+
+Trong khóa học này ta dùng nhiều integrations khác nhau, nên trước hết hãy xem LlamaHub và cách nó hỗ trợ chúng ta.
+
+Tiếp theo: tìm và cài dependencies cho các Components cần thiết.
+
+## Cài đặt
+
+Hướng dẫn cài đặt LlamaIndex có **tổng quan rõ ràng trên [LlamaHub](https://llamahub.ai/)**.
+Thoạt nhìn có thể hơi nhiều, nhưng hầu hết **lệnh cài đặt theo định dạng dễ nhớ**:
+
+```bash
+pip install llama-index-{component-type}-{framework-name}
+```
+
+Hãy thử cài dependencies cho một LLM và embedding Component bằng [Hugging Face inference API integration](https://llamahub.ai/l/llms/llama-index-llms-huggingface-api?from=llms).
+
+```bash
+pip install llama-index-llms-huggingface-api llama-index-embeddings-huggingface
+```
+
+## Cách sử dụng
+
+Sau khi cài, ta xem các mẫu sử dụng. Đường dẫn import theo cùng lệnh cài đặt!
+Bên dưới là ví dụ dùng **Hugging Face inference API cho một LLM Component**.
+
+```python
+from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
+import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv()
+
+# Retrieve HF_TOKEN from the environment variables
+hf_token = os.getenv("HF_TOKEN")
+
+llm = HuggingFaceInferenceAPI(
+    model_name="Qwen/Qwen2.5-Coder-32B-Instruct",
+    temperature=0.7,
+    max_tokens=100,
+    token=hf_token,
+    provider="auto"
+)
+
+response = llm.complete("Hello, how are you?")
+print(response)
+# I am good, how can I help you today?
+```
+
+Tuyệt — giờ ta đã biết cách tìm, cài và dùng integrations cho các Components cần thiết.
+**Hãy đi sâu vào Components** và xem cách dùng chúng để xây dựng Agents của riêng mình.

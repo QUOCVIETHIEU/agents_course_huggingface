@@ -1,0 +1,118 @@
+# Kiểm tra hiểu biết của bạn về LangGraph
+
+Hãy kiểm tra hiểu biết về `LangGraph` với một bài quiz nhanh! Điều này giúp củng cố các khái niệm then chốt ta đã đề cập đến nay.
+
+Đây là bài quiz tùy chọn và không được chấm điểm.
+
+### Q1: Mục đích chính của LangGraph là gì?
+Phát biểu nào mô tả tốt nhất những gì LangGraph được thiết kế để làm?
+
+<Question
+choices={[
+  {
+    text: "Một framework để xây dựng luồng điều khiển cho các ứng dụng chứa LLM",
+    explain: "LangGraph được thiết kế cụ thể để giúp xây dựng và quản lý luồng điều khiển của các ứng dụng sử dụng LLM.",
+    correct: true
+  },
+  {
+    text: "Một thư viện cung cấp giao diện để tương tác với các mô hình LLM khác nhau",
+    explain: "Điều này mô tả tốt hơn vai trò của LangChain, cung cấp giao diện chuẩn cho tương tác với model. LangGraph tập trung vào luồng điều khiển.",
+  },
+  {
+    text: "Một thư viện Agent cho việc gọi Tools",
+    explain: "Mặc dù LangGraph hoạt động với Agents, mục đích chính của LangGraph là 'Orchestration' (Điều phối).",
+  }
+]}
+/>
+
+---
+
+### Q2: Trong bối cảnh đánh đổi "Kiểm soát so với Tự do", LangGraph đứng ở đâu?
+Phát biểu nào đặc trưng tốt nhất cách tiếp cận của LangGraph đối với thiết kế Agent?
+
+<Question
+choices={[
+  {
+    text: "LangGraph tối đa hóa tự do, cho phép LLM đưa ra mọi quyết định một cách độc lập",
+    explain: "LangGraph thực tế tập trung nhiều hơn vào kiểm soát hơn là tự do, cung cấp cấu trúc cho các workflow LLM.",
+  },
+  {
+    text: "LangGraph cung cấp kiểm soát mạnh mẽ đối với luồng thực thi trong khi vẫn tận dụng khả năng của LLM để ra quyết định",
+    explain: "LangGraph tỏa sáng khi bạn cần kiểm soát việc thực thi Agent, cung cấp hành vi có thể dự đoán thông qua các workflow có cấu trúc.",
+    correct: true
+  },
+]}
+/>
+
+---
+
+### Q3: State làm gì trong LangGraph?
+Chọn mô tả chính xác nhất về State trong LangGraph.
+
+<Question
+choices={[
+  {
+    text: "State là thế hệ đầu ra mới nhất từ LLM",
+    explain: "State là lớp do người dùng định nghĩa trong LangGraph, không do LLM sinh ra. Các trường do người dùng định nghĩa; LLM có thể điền các giá trị.",
+  },
+  {
+    text: "State chỉ được dùng để theo dõi lỗi trong quá trình thực thi",
+    explain: "State có mục đích rộng hơn nhiều so với chỉ theo dõi lỗi. Nhưng điều đó vẫn hữu ích.",
+  },
+  {
+    text: "State đại diện cho thông tin chảy xuyên suốt ứng dụng Agent của bạn",
+    explain: "State là trung tâm của LangGraph và chứa tất cả thông tin cần thiết cho việc ra quyết định giữa các bước. Bạn cung cấp các trường cần tính toán và các Node có thể thay đổi giá trị để quyết định phân nhánh.",
+    correct: true
+  },
+  {
+    text: "State chỉ liên quan khi làm việc với API bên ngoài",
+    explain: "State là nền tảng cho mọi ứng dụng LangGraph, không chỉ những ứng dụng làm việc với API bên ngoài.",
+  }
+]}
+/>
+
+### Q4: Conditional Edge trong LangGraph là gì?
+Chọn mô tả chính xác nhất.
+
+<Question
+choices={[
+    {
+    text: "Một Edge xác định Node nào sẽ thực thi tiếp theo dựa trên việc đánh giá một điều kiện",
+    explain: "Conditional edges cho phép Graph của bạn đưa ra quyết định định tuyến động dựa trên State hiện tại, tạo logic phân nhánh trong workflow.",
+    correct: true
+  },
+  {
+    text: "Một Edge chỉ được đi theo khi một điều kiện cụ thể xảy ra",
+    explain: "Conditional edges kiểm soát luồng của ứng dụng dựa trên đầu ra của nó, không phải dựa trên đầu vào.",
+  },
+  {
+    text: "Một Edge yêu cầu xác nhận từ người dùng trước khi tiếp tục",
+    explain: "Conditional edges dựa trên các điều kiện mang tính lập trình, không phải yêu cầu tương tác từ người dùng.",
+  }
+]}
+/>
+
+---
+
+### Q5: LangGraph giúp giải quyết vấn đề hallucination của LLM như thế nào?
+Chọn câu trả lời tốt nhất.
+
+<Question
+choices={[
+  {
+    text: "LangGraph loại bỏ hoàn toàn hallucination bằng cách giới hạn phản hồi của LLM",
+    explain: "Không có framework nào loại bỏ hoàn toàn hallucination từ LLM, LangGraph cũng không phải ngoại lệ.",
+  },
+  {
+    text: "LangGraph cung cấp các workflow có cấu trúc có thể xác thực và kiểm chứng đầu ra của LLM",
+    explain: "Bằng cách tạo các workflow có cấu trúc với các bước xác thực, các Node kiểm chứng, và các đường xử lý lỗi, LangGraph giúp giảm tác động của hallucination.",
+    correct: true
+  },
+  {
+    text: "LangGraph không có ảnh hưởng đến hallucination",
+    explain: "Cách tiếp cận có cấu trúc của LangGraph đối với workflow giúp giảm thiểu đáng kể hallucination với cái giá là tốc độ.",
+  }
+]}
+/>
+
+Chúc mừng bạn đã hoàn thành quiz! 🎉 Nếu trả lời sai bất kỳ câu hỏi nào, hãy xem lại các phần trước để củng cố hiểu biết. Tiếp theo, ta tìm hiểu các tính năng nâng cao hơn của LangGraph và cách xây workflow Agent phức tạp hơn.

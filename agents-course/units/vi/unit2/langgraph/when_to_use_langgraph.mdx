@@ -1,0 +1,68 @@
+# `LangGraph` là gì? [[what-is-langgraph]]
+
+`LangGraph` là framework do [LangChain](https://www.langchain.com/) phát triển **để quản lý luồng điều khiển của các ứng dụng tích hợp LLM**.
+
+## `LangGraph` khác gì so với `LangChain`?
+
+LangChain cung cấp giao diện chuẩn để tương tác với model và các thành phần khác — hữu ích cho retrieval, gọi LLM và gọi Tools.
+Các lớp từ LangChain *có thể* dùng trong LangGraph, nhưng *không bắt buộc*.
+
+Hai package khác nhau và dùng riêng biệt được, nhưng hầu hết tài nguyên trên mạng đều dùng cả hai kết hợp.
+
+## Khi nào nên dùng `LangGraph`?
+### Kiểm soát so với Tự do
+
+Khi thiết kế ứng dụng AI, ta đối mặt với đánh đổi cơ bản giữa **kiểm soát (Control)** và **tự do (Freedom)**:
+
+- **Tự do** cho LLM nhiều không gian hơn để sáng tạo và xử lý vấn đề bất ngờ.
+- **Kiểm soát** giúp đảm bảo hành vi dự đoán được và duy trì guardrails.
+
+Code Agents, như những agent trong *smolagents*, rất tự do. Chúng gọi nhiều Tools trong một bước hành động, tự tạo Tools riêng, v.v. Tuy nhiên, hành vi này khiến chúng kém dự đoán và khó kiểm soát hơn Agent thông thường làm việc với JSON!
+
+`LangGraph` nằm ở đầu kia của phổ — nổi bật khi cần **"Kiểm soát"** việc thực thi Agent.
+
+LangGraph đặc biệt hữu ích khi cần **kiểm soát ứng dụng**. Nó cung cấp công cụ để xây dựng ứng dụng đi theo quy trình dự đoán được, đồng thời vẫn tận dụng sức mạnh của LLM.
+
+Nói đơn giản: nếu ứng dụng gồm chuỗi bước cần điều phối theo cách cụ thể, với quyết định tại mỗi điểm giao, **LangGraph cung cấp cấu trúc cần thiết**.
+
+Ví dụ: giả sử ta muốn xây trợ lý LLM trả lời câu hỏi dựa trên một số tài liệu.
+
+Vì LLM hiểu văn bản tốt nhất, trước khi trả lời câu hỏi, cần chuyển các dạng phức tạp khác (biểu đồ, bảng) thành văn bản. Lựa chọn đó phụ thuộc loại tài liệu!
+
+Đây là nhánh phân nhánh tôi chọn biểu diễn như sau:
+
+<img src="https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/LangGraph/flow.png" alt="Control flow"/>
+
+> 💡 **Mẹo:** Phần bên trái không phải Agent, vì không có lời gọi Tool. Nhưng phần bên phải cần viết code để truy vấn file xls (chuyển sang pandas và thao tác).
+
+Dù nhánh này mang tính xác định (deterministic), ta cũng thiết kế được các nhánh điều kiện theo đầu ra của LLM — khi đó chúng không xác định (undeterministic).
+
+Các tình huống then chốt mà LangGraph vượt trội:
+
+- **Quy trình lập luận nhiều bước** cần kiểm soát rõ ràng luồng thực thi
+- **Ứng dụng cần duy trì State** giữa các bước
+- **Hệ thống kết hợp logic xác định với khả năng AI**
+- **Workflow cần can thiệp của con người (human-in-the-loop)**
+- **Kiến trúc Agent phức tạp** với nhiều thành phần làm việc cùng nhau
+
+Về bản chất: bất cứ khi nào **với tư cách con người**, ta thiết kế được luồng hành động dựa trên đầu ra từng bước và quyết định bước tiếp theo tương ứng — LangGraph là framework phù hợp.
+
+`LangGraph`, theo ý kiến của tôi, là framework Agent sẵn sàng cho production nhất trên thị trường.
+
+## LangGraph hoạt động như thế nào?
+
+Ở cốt lõi, `LangGraph` dùng cấu trúc đồ thị có hướng để định nghĩa luồng ứng dụng:
+
+- **Nodes** đại diện các bước xử lý riêng lẻ (gọi LLM, dùng Tool, hoặc đưa quyết định).
+- **Edges** định nghĩa các chuyển tiếp có thể giữa các bước.
+- **State** do người dùng định nghĩa, được duy trì và truyền giữa các Node trong quá trình thực thi. Khi quyết định Node đích tiếp theo, ta xem xét State hiện tại.
+
+Ta sẽ tìm hiểu các khối cơ bản này kỹ hơn ở chương tiếp theo!
+
+## Khác gì so với Python thông thường? Tại sao cần LangGraph?
+
+Các bạn có thể tự hỏi: "Tôi chỉ cần viết Python thông thường với if-else để xử lý mọi luồng này, đúng không?"
+
+Về mặt kỹ thuật thì đúng, nhưng LangGraph mang lại **một số lợi thế** so với Python thuần khi xây hệ thống phức tạp. Ta xây cùng ứng dụng mà không cần LangGraph, nhưng framework này sẵn các công cụ và lớp trừu tượng dễ dùng hơn.
+
+Nó bao gồm State, trực quan hóa, logging (traces), human-in-the-loop tích hợp sẵn, và nhiều hơn nữa.

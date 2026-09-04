@@ -1,0 +1,66 @@
+![smolagents banner](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/smolagents/license_to_call.png)
+# Tại sao dùng smolagents
+
+Trong phần này, ta nêu ưu và nhược điểm của [smolagents](https://huggingface.co/docs/smolagents/en/index) để các bạn quyết định framework có phù hợp nhu cầu hay không.
+
+## `smolagents` là gì?
+
+`smolagents` là framework đơn giản để xây AI Agents. Nó trao cho LLMs _tính chủ động (agency)_ để tương tác với thế giới thực — ví dụ tìm kiếm hoặc tạo ảnh.
+
+Như đã học ở Unit 1, AI Agents là chương trình dùng LLMs để sinh **'Thoughts'** dựa trên **'Observations'** nhằm thực hiện **'Actions'**. Hãy xem cách smolagents triển khai điều này.
+
+### Ưu điểm then chốt của `smolagents`
+- **Đơn giản:** Độ phức tạp code và lớp trừu tượng tối thiểu — dễ hiểu, dễ áp dụng và dễ mở rộng
+- **Hỗ trợ LLM linh hoạt:** Hoạt động với mọi LLM qua tích hợp Hugging Face và API bên ngoài
+- **Tiếp cận Code-First:** Hỗ trợ hạng nhất cho Code Agents — ghi Action trực tiếp bằng code, bỏ bước parse và đơn giản hóa tool call
+- **Tích hợp HF Hub:** Tích hợp với Hugging Face Hub, dùng Gradio Spaces như Tools
+
+### Khi nào nên dùng smolagents?
+
+Với những ưu điểm này, khi nào nên chọn smolagents thay vì framework khác?
+
+smolagents phù hợp khi:
+- Các bạn cần **giải pháp nhẹ và tối giản.**
+- Các bạn muốn **thử nghiệm nhanh** mà không cấu hình phức tạp.
+- **Logic ứng dụng tương đối đơn giản.**
+
+### Code vs. JSON Actions
+Khác các framework nơi Agents ghi Action bằng JSON, `smolagents` **tập trung vào tool call bằng code**, đơn giản hóa thực thi. Không cần parse JSON để dựng code gọi Tools: đầu ra thực thi trực tiếp.
+
+Sơ đồ sau minh họa sự khác biệt:
+
+![Code vs. JSON actions](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/code_vs_json_actions.png)
+
+Để ôn lại Code vs JSON Actions, xem lại [phần Actions trong Unit 1](https://huggingface.co/learn/agents-course/unit1/actions#actions-enabling-the-agent-to-engage-with-its-environment).
+
+### Các loại Agent trong `smolagents`
+
+Agents trong `smolagents` hoạt động như **multi-step agents**.
+
+Mỗi [`MultiStepAgent`](https://huggingface.co/docs/smolagents/main/en/reference/agents#smolagents.MultiStepAgent) thực hiện:
+- Một Thought
+- Một lần gọi Tool và thực thi
+
+Bên cạnh **[CodeAgent](https://huggingface.co/docs/smolagents/main/en/reference/agents#smolagents.CodeAgent)** làm loại Agent chính, smolagents cũng hỗ trợ **[ToolCallingAgent](https://huggingface.co/docs/smolagents/main/en/reference/agents#smolagents.ToolCallingAgent)** — ghi tool call bằng JSON.
+
+Ta sẽ đi sâu từng loại Agent ở các phần tiếp theo.
+
+> [!TIP]
+> Trong smolagents, Tools được định nghĩa bằng decorator <code>@tool</code> bao quanh hàm Python hoặc bằng lớp <code>Tool</code>.
+
+### Tích hợp Model trong `smolagents`
+`smolagents` hỗ trợ tích hợp LLM linh hoạt: dùng bất kỳ mô hình callable nào đáp ứng [các tiêu chí nhất định](https://huggingface.co/docs/smolagents/main/en/reference/models). Framework cung cấp một số lớp định sẵn để kết nối mô hình:
+
+- **[TransformersModel](https://huggingface.co/docs/smolagents/main/en/reference/models#smolagents.TransformersModel):** Triển khai pipeline `transformers` cục bộ.
+- **[InferenceClientModel](https://huggingface.co/docs/smolagents/main/en/reference/models#smolagents.InferenceClientModel):** Hỗ trợ lời gọi [serverless inference](https://huggingface.co/docs/huggingface_hub/main/en/guides/inference) qua [hạ tầng Hugging Face](https://huggingface.co/docs/api-inference/index), hoặc qua nhiều [nhà cung cấp inference bên thứ ba](https://huggingface.co/docs/huggingface_hub/main/en/guides/inference#supported-providers-and-tasks).
+- **[LiteLLMModel](https://huggingface.co/docs/smolagents/main/en/reference/models#smolagents.LiteLLMModel):** Dùng [LiteLLM](https://www.litellm.ai/) cho tương tác mô hình nhẹ.
+- **[OpenAIServerModel](https://huggingface.co/docs/smolagents/main/en/reference/models#smolagents.OpenAIServerModel):** Kết nối dịch vụ có giao diện OpenAI API.
+- **[AzureOpenAIServerModel](https://huggingface.co/docs/smolagents/main/en/reference/models#smolagents.AzureOpenAIServerModel):** Tích hợp với Azure OpenAI deployment.
+
+Nhờ đó, developers chọn mô hình và dịch vụ phù hợp use case, đồng thời thử nghiệm dễ dàng.
+
+Giờ các bạn đã hiểu tại sao và khi nào dùng smolagents, hãy đi sâu hơn vào thư viện này!
+
+## Tài nguyên
+
+- [smolagents Blog](https://huggingface.co/blog/smolagents) - Giới thiệu về smolagents và tương tác bằng code

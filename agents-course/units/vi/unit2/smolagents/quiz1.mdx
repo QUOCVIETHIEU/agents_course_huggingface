@@ -1,0 +1,142 @@
+# Kiểm tra nhanh (không chấm điểm) [[quiz1]]
+
+Hãy kiểm tra mức độ hiểu của các bạn về `smolagents` với một bài quiz ngắn! Tự kiểm tra giúp củng cố việc học và nhận diện phần cần ôn lại.
+
+Đây là bài quiz tùy chọn và không chấm điểm.
+
+### Q1: Đâu là một trong những ưu điểm chính khi chọn `smolagents` thay vì các framework khác?
+Phát biểu nào nắm bắt tốt nhất điểm mạnh cốt lõi của cách tiếp cận `smolagents`?
+
+<Question
+choices={[
+  {
+    text: "Nó dùng các file cấu hình chuyên biệt cao và đường cong học dốc để đảm bảo chỉ developer chuyên gia mới dùng được",
+    explain: "smolagents được thiết kế hướng tới sự đơn giản và độ phức tạp code tối thiểu, không phải đường cong học dốc.",
+  },
+  {
+    text: "Nó hỗ trợ cách tiếp cận code-first với các lớp trừu tượng tối thiểu, cho phép Agents tương tác trực tiếp qua lời gọi hàm Python",
+    explain: "Đúng, smolagents nhấn mạnh thiết kế thẳng, lấy code làm trung tâm với các lớp trừu tượng tối thiểu.",
+    correct: true
+  },
+  {
+    text: "Nó tập trung vào các Actions dựa trên JSON, loại bỏ nhu cầu để Agents viết bất kỳ code nào",
+    explain: "Mặc dù smolagents hỗ trợ tool call dựa trên JSON (ToolCallingAgents), thư viện vẫn nhấn mạnh cách tiếp cận dựa trên code với CodeAgents.",
+  },
+  {
+    text: "Nó tích hợp sâu với một nhà cung cấp LLM duy nhất và phần cứng chuyên biệt",
+    explain: "smolagents hỗ trợ nhiều nhà cung cấp mô hình và không yêu cầu phần cứng chuyên biệt.",
+  }
+]}
+/>
+
+---
+
+### Q2: Trong tình huống nào các bạn hưởng lợi nhiều nhất từ việc dùng smolagents?
+Tình huống nào phù hợp tốt với những gì smolagents làm tốt nhất?
+
+<Question
+choices={[
+  {
+    text: "Prototype hoặc thử nghiệm nhanh logic Agent, đặc biệt khi ứng dụng tương đối đơn giản",
+    explain: "Đúng. smolagents được thiết kế để tạo Agent đơn giản và linh hoạt mà không tốn chi phí thiết lập lớn.",
+    correct: true
+  },
+  {
+    text: "Xây dựng hệ thống enterprise quy mô lớn nơi các bạn cần hàng chục microservices và các pipeline dữ liệu thời gian thực",
+    explain: "Dù có thể làm được, smolagents tập trung hơn vào thử nghiệm nhẹ, lấy code làm trung tâm thay vì hạ tầng enterprise nặng nề.",
+  },
+  {
+    text: "Cần một framework chỉ hỗ trợ LLMs trên cloud và cấm inference cục bộ",
+    explain: "smolagents cung cấp tích hợp linh hoạt với mô hình cục bộ hoặc được host, không chỉ riêng LLMs trên cloud.",
+  },
+  {
+    text: "Một tình huống yêu cầu điều phối nâng cao, nhận thức đa phương thức và các tính năng quy mô enterprise sẵn có",
+    explain: "Dù các bạn có thể tích hợp các khả năng nâng cao, bản thân smolagents vốn nhẹ và tối giản ở cốt lõi.",
+  }
+]}
+/>
+
+---
+
+### Q3: smolagents mang lại sự linh hoạt trong tích hợp mô hình. Phát biểu nào phản ánh tốt nhất cách tiếp cận của nó?
+Chọn mô tả chính xác nhất về cách smolagents tương tác với LLMs.
+
+<Question
+choices={[
+  {
+    text: "Nó chỉ cung cấp một mô hình built-in duy nhất và không cho phép tích hợp tùy chỉnh",
+    explain: "smolagents hỗ trợ nhiều backend khác nhau và các mô hình do người dùng định nghĩa.",
+  },
+  {
+    text: "Nó yêu cầu các bạn tự triển khai model connector cho mọi lần dùng LLM",
+    explain: "Có nhiều connector dựng sẵn giúp tích hợp LLM trở nên đơn giản.",
+  },
+  {
+    text: "Nó chỉ tích hợp với các LLMs open-source chứ không với các API thương mại",
+    explain: "smolagents có thể tích hợp với cả API mô hình open-source và thương mại.",
+  },
+  {
+    text: "Nó có thể dùng với nhiều LLMs khác nhau, cung cấp các lớp định nghĩa sẵn như TransformersModel, InferenceClientModel và LiteLLMModel",
+    explain: "Đúng. smolagents hỗ trợ tích hợp mô hình linh hoạt thông qua nhiều lớp khác nhau.",
+    correct: true
+  }
+]}
+/>
+
+---
+
+### Q4: smolagents xử lý cuộc tranh luận giữa code-based Actions và JSON-based Actions như thế nào?
+Phát biểu nào mô tả đúng triết lý của smolagents về định dạng hành động?
+
+<Question
+choices={[
+  {
+    text: "Nó chỉ cho phép JSON-based Actions cho mọi tác vụ của Agent, yêu cầu một parser để trích xuất các lần gọi Tool",
+    explain: "ToolCallingAgent dùng các lời gọi dựa trên JSON, nhưng smolagents cũng cung cấp tùy chọn CodeAgent chính để viết code Python.",
+  },
+  {
+    text: "Nó tập trung vào code-based Actions qua CodeAgent nhưng cũng hỗ trợ các lần gọi Tool dựa trên JSON với ToolCallingAgent",
+    explain: "Đúng, smolagents chủ yếu khuyến nghị code-based Actions nhưng cũng có tùy chọn dựa trên JSON cho người dùng muốn hoặc cần dùng.",
+    correct: true
+  },
+  {
+    text: "Nó cấm mọi lời gọi hàm bên ngoài, thay vào đó yêu cầu toàn bộ logic nằm hoàn toàn trong LLM",
+    explain: "smolagents được thiết kế cụ thể để trao cho LLMs khả năng gọi Tools hoặc code từ bên ngoài.",
+  },
+  {
+    text: "Nó yêu cầu người dùng tự chuyển mọi đoạn code thành đối tượng JSON trước khi chạy Agent",
+    explain: "smolagents có thể tự động quản lý việc tạo đoạn code trong đường dẫn CodeAgent, không cần chuyển đổi JSON thủ công.",
+  }
+]}
+/>
+
+---
+
+### Q5: smolagents tích hợp với Hugging Face Hub để mang lại lợi ích bổ sung như thế nào?
+Phát biểu nào mô tả chính xác một trong những ưu điểm cốt lõi của tích hợp Hub?
+
+<Question
+choices={[
+  {
+    text: "Nó tự động nâng cấp mọi mô hình công khai lên các bậc giấy phép thương mại",
+    explain: "Tích hợp Hub không thay đổi bậc giấy phép của mô hình hay Tools.",
+  },
+  {
+    text: "Nó vô hiệu hóa hoàn toàn inference cục bộ, buộc chỉ dùng mô hình từ xa",
+    explain: "Người dùng vẫn có thể làm inference cục bộ nếu muốn; đẩy lên Hub không ghi đè việc dùng cục bộ.",
+  },
+  {
+    text: "Nó cho phép các bạn đẩy và chia sẻ Agents hoặc Tools, giúp chúng dễ tìm thấy và tái sử dụng bởi các developers khác",
+    explain: "smolagents hỗ trợ tải lên Agents và Tools lên HF Hub để người khác tái sử dụng.",
+    correct: true
+  },
+  {
+    text: "Nó lưu trữ vĩnh viễn mọi code-based Agents của các bạn, ngăn mọi cập nhật hoặc versioning",
+    explain: "Các repository trên Hub hỗ trợ cập nhật và kiểm soát phiên bản, nên các bạn có thể chỉnh sửa code-based Agents bất cứ lúc nào.",
+  }
+]}
+/>
+
+---
+
+Chúc mừng các bạn đã hoàn thành bài quiz này! 🎉 Nếu trả lời sai bất kỳ câu nào, hãy xem lại phần *Tại sao dùng smolagents* để hiểu sâu hơn. Nếu làm tốt, các bạn đã sẵn sàng đi tiếp các chủ đề nâng cao hơn trong smolagents!

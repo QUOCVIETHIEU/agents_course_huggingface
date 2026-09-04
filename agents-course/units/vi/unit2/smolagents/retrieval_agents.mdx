@@ -1,0 +1,167 @@
+<CourseFloatingBanner 
+  classNames="absolute z-10 right-0 top-0"
+  notebooks={[
+    {label: "Google Colab", value: "https://colab.research.google.com/#fileId=https://huggingface.co/agents-course/notebooks/blob/main/unit2/smolagents/retrieval_agents.ipynb"},
+]}
+askForHelpUrl="http://hf.co/join/discord" />
+
+# Xây dựng hệ thống Agentic RAG
+
+> [!TIP]
+> Các bạn có thể theo dõi code trong <a href="https://huggingface.co/agents-course/notebooks/blob/main/unit2/smolagents/retrieval_agents.ipynb" target="_blank">notebook này</a> và chạy bằng Google Colab.
+
+Hệ thống Retrieval Augmented Generation (RAG) kết hợp truy xuất dữ liệu và mô hình sinh để đưa phản hồi có ngữ cảnh. Ví dụ: truy vấn người dùng đưa vào search engine; kết quả truy xuất cùng truy vấn được đưa cho mô hình. Mô hình sinh phản hồi dựa trên truy vấn và thông tin đã truy xuất.
+
+Agentic RAG (Retrieval-Augmented Generation) mở rộng RAG truyền thống bằng cách **kết hợp Agent tự chủ với truy xuất tri thức động**.
+
+Trong khi RAG truyền thống dùng LLM để trả lời truy vấn dựa trên dữ liệu đã truy xuất, Agentic RAG **điều khiển thông minh cả quá trình truy xuất lẫn sinh** — cải thiện hiệu quả và độ chính xác.
+
+Hệ thống RAG truyền thống gặp hạn chế như **dựa vào một bước truy xuất duy nhất** và tập trung vào độ tương đồng ngữ nghĩa trực tiếp với truy vấn người dùng, có thể bỏ sót thông tin liên quan.
+
+Agentic RAG giải quyết các vấn đề này bằng cách cho Agent tự chủ xây dựng truy vấn tìm kiếm, đánh giá kết quả truy xuất, và thực hiện nhiều bước truy xuất để cho đầu ra phù hợp và toàn diện hơn.
+
+## Truy xuất cơ bản với DuckDuckGo
+
+Hãy xây một Agent đơn giản tìm kiếm trên web bằng DuckDuckGo. Agent này truy xuất thông tin và tổng hợp phản hồi để trả lời truy vấn. Với Agentic RAG, Agent của Alfred có thể:
+
+* Tìm xu hướng tiệc siêu anh hùng mới nhất
+* Tinh chỉnh kết quả để gồm các yếu tố sang trọng
+* Tổng hợp thông tin thành kế hoạch hoàn chỉnh
+
+Đây là cách Agent của Alfred làm được điều đó:
+
+```python
+from smolagents import CodeAgent, DuckDuckGoSearchTool, InferenceClientModel
+
+# Initialize the search tool
+search_tool = DuckDuckGoSearchTool()
+
+# Initialize the model
+model = InferenceClientModel()
+
+agent = CodeAgent(
+    model=model,
+    tools=[search_tool],
+)
+
+# Example usage
+response = agent.run(
+    "Search for luxury superhero-themed party ideas, including decorations, entertainment, and catering."
+)
+print(response)
+```
+
+Agent tuân theo quy trình sau:
+
+1. **Phân tích yêu cầu:** Agent của Alfred xác định các yếu tố chính của truy vấn — lập kế hoạch tiệc siêu anh hùng sang trọng, tập trung vào trang trí, giải trí và catering.
+2. **Thực hiện truy xuất:** Agent dùng DuckDuckGo để tìm thông tin liên quan và cập nhật nhất, khớp với sở thích đã tinh chỉnh của Alfred cho sự kiện sang trọng.
+3. **Tổng hợp thông tin:** Sau khi thu thập kết quả, Agent xử lý chúng thành kế hoạch gắn kết, có thể hành động cho Alfred, bao phủ mọi khía cạnh của buổi tiệc.
+4. **Lưu để tham chiếu sau:** Agent lưu thông tin đã truy xuất để dễ truy cập khi lập kế hoạch sự kiện tương lai, tối ưu hiệu quả cho các tác vụ tiếp theo.
+
+## Tool Knowledge Base tùy chỉnh
+
+Với các tác vụ chuyên biệt, knowledge base tùy chỉnh rất hữu ích. Hãy tạo một Tool truy vấn vector database của tài liệu kỹ thuật hoặc tri thức chuyên biệt. Nhờ semantic search, Agent tìm thông tin liên quan nhất cho nhu cầu của Alfred.
+
+Vector database lưu biểu diễn số (embeddings) của văn bản hoặc dữ liệu khác, được tạo bởi các mô hình machine learning. Nó cho phép semantic search bằng cách nhận diện các ý nghĩa tương tự trong không gian nhiều chiều.
+
+Cách tiếp cận này kết hợp tri thức định sẵn với semantic search để đưa giải pháp có ngữ cảnh cho lập kế hoạch sự kiện. Với quyền truy cập tri thức chuyên biệt, Alfred hoàn thiện mọi chi tiết của buổi tiệc.
+
+Trong ví dụ này, ta tạo một Tool truy xuất ý tưởng lập kế hoạch tiệc từ knowledge base tùy chỉnh. Ta dùng BM25 retriever để tìm trong knowledge base và trả về kết quả hàng đầu, cùng `RecursiveCharacterTextSplitter` để chia tài liệu thành các chunk nhỏ hơn cho tìm kiếm hiệu quả hơn.
+
+```python
+from langchain_community.docstore.document import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from smolagents import Tool
+from langchain_community.retrievers import BM25Retriever
+from smolagents import CodeAgent, InferenceClientModel
+
+class PartyPlanningRetrieverTool(Tool):
+    name = "party_planning_retriever"
+    description = "Uses semantic search to retrieve relevant party planning ideas for Alfred’s superhero-themed party at Wayne Manor."
+    inputs = {
+        "query": {
+            "type": "string",
+            "description": "The query to perform. This should be a query related to party planning or superhero themes.",
+        }
+    }
+    output_type = "string"
+
+    def __init__(self, docs, **kwargs):
+        super().__init__(**kwargs)
+        self.retriever = BM25Retriever.from_documents(
+            docs, k=5  # Retrieve the top 5 documents
+        )
+
+    def forward(self, query: str) -> str:
+        assert isinstance(query, str), "Your search query must be a string"
+
+        docs = self.retriever.invoke(
+            query,
+        )
+        return "\nRetrieved ideas:\n" + "".join(
+            [
+                f"\n\n===== Idea {str(i)} =====\n" + doc.page_content
+                for i, doc in enumerate(docs)
+            ]
+        )
+
+# Simulate a knowledge base about party planning
+party_ideas = [
+    {"text": "A superhero-themed masquerade ball with luxury decor, including gold accents and velvet curtains.", "source": "Party Ideas 1"},
+    {"text": "Hire a professional DJ who can play themed music for superheroes like Batman and Wonder Woman.", "source": "Entertainment Ideas"},
+    {"text": "For catering, serve dishes named after superheroes, like 'The Hulk's Green Smoothie' and 'Iron Man's Power Steak.'", "source": "Catering Ideas"},
+    {"text": "Decorate with iconic superhero logos and projections of Gotham and other superhero cities around the venue.", "source": "Decoration Ideas"},
+    {"text": "Interactive experiences with VR where guests can engage in superhero simulations or compete in themed games.", "source": "Entertainment Ideas"}
+]
+
+source_docs = [
+    Document(page_content=doc["text"], metadata={"source": doc["source"]})
+    for doc in party_ideas
+]
+
+# Split the documents into smaller chunks for more efficient search
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=50,
+    add_start_index=True,
+    strip_whitespace=True,
+    separators=["\n\n", "\n", ".", " ", ""],
+)
+docs_processed = text_splitter.split_documents(source_docs)
+
+# Create the retriever tool
+party_planning_retriever = PartyPlanningRetrieverTool(docs_processed)
+
+# Initialize the agent
+agent = CodeAgent(tools=[party_planning_retriever], model=InferenceClientModel())
+
+# Example usage
+response = agent.run(
+    "Find ideas for a luxury superhero-themed party, including entertainment, catering, and decoration options."
+)
+
+print(response)
+```
+
+Agent được nâng cấp này có thể:
+1. Trước tiên kiểm tra tài liệu để tìm thông tin liên quan
+2. Kết hợp insights từ knowledge base
+3. Duy trì ngữ cảnh hội thoại trong memory
+
+## Năng lực truy xuất nâng cao
+
+Khi xây hệ thống Agentic RAG, Agent dùng các chiến lược tinh vi như:
+
+1. **Query Reformulation:** Thay vì dùng nguyên truy vấn thô của người dùng, Agent tạo các từ khóa tìm kiếm được tối ưu khớp tốt hơn với tài liệu đích
+2. **Query Decomposition:** Thay vì dùng trực tiếp truy vấn người dùng, nếu nó chứa nhiều phần thông tin cần truy vấn, tách thành nhiều truy vấn
+3. **Query Expansion:** Tương tự Query Reformulation nhưng thực hiện nhiều lần để diễn đạt truy vấn theo nhiều cách wording rồi truy vấn tất cả
+4. **Reranking:** Dùng Cross-Encoders để gán điểm liên quan ngữ nghĩa toàn diện hơn giữa các tài liệu đã truy xuất và truy vấn tìm kiếm
+5. **Multi-Step Retrieval:** Agent thực hiện nhiều lần tìm kiếm, dùng kết quả ban đầu để định hướng các truy vấn tiếp theo
+6. **Source Integration:** Thông tin được kết hợp từ nhiều nguồn như web search và tài liệu cục bộ
+7. **Result Validation:** Nội dung đã truy xuất được phân tích về độ liên quan và độ chính xác trước khi đưa vào phản hồi
+
+Hệ thống Agentic RAG hiệu quả đòi hỏi cân nhắc kỹ một số khía cạnh chính. Agent **nên chọn giữa các Tools sẵn có dựa trên loại truy vấn và ngữ cảnh**. Hệ thống memory giúp duy trì lịch sử hội thoại và tránh truy xuất lặp lại. Chiến lược fallback đảm bảo hệ thống vẫn mang lại giá trị ngay cả khi phương pháp truy xuất chính thất bại. Ngoài ra, triển khai các bước validation giúp đảm bảo độ chính xác và liên quan của thông tin đã truy xuất.
+
+## Tài nguyên
+
+- [Agentic RAG: turbocharge your RAG with query reformulation and self-query! 🚀](https://huggingface.co/learn/cookbook/agent_rag) - Công thức phát triển hệ thống Agentic RAG bằng smolagents.

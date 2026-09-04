@@ -1,0 +1,132 @@
+# Quiz: Đánh giá AI Agent
+
+Hãy kiểm tra mức hiểu về tracing và Evaluation của Agent đã học trong bonus unit này.
+
+Quiz này là tùy chọn và không tính điểm.
+
+### Q1: Observability trong AI Agent chủ yếu ám chỉ điều gì?
+Phát biểu nào mô tả chính xác mục đích của Observability đối với AI Agent?
+
+<Question
+choices={[ 
+  {
+    text: "Theo dõi các thao tác nội bộ qua logs, metrics và spans để hiểu hành vi của Agent.",
+    explain: "Đúng! Observability nghĩa là dùng logs, metrics và spans để làm sáng tỏ cách Agent hoạt động bên trong.",
+    correct: true
+  },
+  {
+    text: "Chỉ tập trung vào việc giảm chi phí tài chính khi chạy Agent.",
+    explain: "Observability bao gồm chi phí nhưng không chỉ giới hạn ở đó."
+  },
+  {
+    text: "Chỉ đề cập đến giao diện bên ngoài và UI của Agent.",
+    explain: "Observability liên quan đến các quy trình nội bộ, không phải UI."
+  },
+  {
+    text: "Chỉ quan tâm đến phong cách code và thẩm mỹ mã nguồn.",
+    explain: "Phong cách code không liên quan đến Observability trong ngữ cảnh này."
+  }
+]}
+/>
+
+### Q2: Cái nào sau đây KHÔNG phải là metric phổ biến trong Agent Observability?
+Chọn metric thường không thuộc phạm vi Observability.
+
+<Question
+choices={[ 
+  {
+    text: "Latency",
+    explain: "Latency thường được theo dõi để đánh giá mức phản hồi của Agent."
+  },
+  {
+    text: "Chi phí mỗi lần chạy Agent (Cost per Agent Run)",
+    explain: "Theo dõi chi phí là một khía cạnh then chốt của Observability."
+  },
+  {
+    text: "Phản hồi và đánh giá của người dùng (User Feedback and Ratings)",
+    explain: "Phản hồi người dùng rất quan trọng để đánh giá hiệu suất Agent."
+  },
+  {
+    text: "Số dòng code của Agent",
+    explain: "Số dòng code không phải là metric Observability điển hình.",
+    correct: true
+  }
+]}
+/>
+
+### Q3: Offline Evaluation của AI Agent được mô tả tốt nhất như thế nào?
+Xác định phát biểu nắm đúng bản chất của offline evaluation.
+
+<Question
+choices={[ 
+  {
+    text: "Đánh giá Agent bằng tương tác người dùng thật trong môi trường trực tiếp.",
+    explain: "Đây mô tả online evaluation chứ không phải offline."
+  },
+  {
+    text: "Đánh giá hiệu suất Agent bằng các dataset đã chọn lọc với ground truth đã biết.",
+    explain: "Đúng! Offline evaluation dùng test datasets để đo hiệu suất so với đáp án đã biết.",
+    correct: true
+  },
+  {
+    text: "Theo dõi logs nội bộ của Agent theo thời gian thực.",
+    explain: "Điều này liên quan nhiều hơn đến Observability hơn là Evaluation."
+  },
+  {
+    text: "Chạy Agent mà không dùng bất kỳ metric đánh giá nào.",
+    explain: "Cách này không mang lại thông tin hữu ích."
+  }
+]}
+/>
+
+### Q4: Online Evaluation mang lại lợi thế nào cho Agent?
+Chọn phát biểu phản ánh tốt nhất lợi ích của online evaluation.
+
+<Question
+choices={[ 
+  {
+    text: "Cung cấp kịch bản kiểm thử có kiểm soát bằng các dataset định sẵn.",
+    explain: "Kiểm thử có kiểm soát là lợi ích của offline evaluation, không phải online."
+  },
+  {
+    text: "Nắm bắt tương tác người dùng trực tiếp và dữ liệu hiệu suất ngoài đời thực.",
+    explain: "Đúng! Online evaluation mang lại thông tin bằng cách theo dõi Agent trong môi trường live.",
+    correct: true
+  },
+  {
+    text: "Loại bỏ hoàn toàn nhu cầu offline testing và benchmarks.",
+    explain: "Cả offline và online evaluation đều quan trọng và bổ trợ lẫn nhau."
+  },
+  {
+    text: "Chỉ tập trung vào việc giảm chi phí tính toán của Agent.",
+    explain: "Theo dõi chi phí thuộc Observability, không phải lợi thế chính của online evaluation."
+  }
+]}
+/>
+
+### Q5: OpenTelemetry làm gì trong Observability và Evaluation của AI Agent?
+Phát biểu nào mô tả tốt nhất vai trò của OpenTelemetry trong việc theo dõi AI Agent?
+
+<Question
+choices={[ 
+  {
+    text: "Cung cấp framework chuẩn hóa để instrument code, cho phép thu thập traces, metrics và logs phục vụ Observability.",
+    explain: "Đúng! OpenTelemetry chuẩn hóa instrumentation cho dữ liệu telemetry, vốn then chốt để theo dõi và chẩn đoán hành vi Agent.",
+    correct: true
+  },
+  {
+    text: "Thay thế việc debug thủ công bằng cách tự động sửa lỗi code.",
+    explain: "Sai. OpenTelemetry dùng để thu thập dữ liệu telemetry, không phải sửa lỗi code."
+  },
+  {
+    text: "Chủ yếu là database lưu logs lịch sử mà không có khả năng thời gian thực.",
+    explain: "Sai. OpenTelemetry tập trung vào thu thập telemetry theo thời gian thực và xuất dữ liệu sang các công cụ phân tích."
+  },
+  {
+    text: "Dùng để tối ưu hiệu suất tính toán của AI Agent bằng cách tự động tinh chỉnh tham số model.",
+    explain: "Sai. OpenTelemetry tập trung vào Observability chứ không phải tinh chỉnh hiệu suất."
+  }
+]}
+/>
+
+Chúc mừng các bạn đã hoàn thành quiz! 🎉 Nếu trả lời sai câu nào, hãy xem lại nội dung bonus unit này. Nếu làm tốt, các bạn đã sẵn sàng đi sâu hơn về Agent Observability và Evaluation!

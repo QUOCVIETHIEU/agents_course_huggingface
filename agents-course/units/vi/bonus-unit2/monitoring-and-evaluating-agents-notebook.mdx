@@ -1,0 +1,442 @@
+<CourseFloatingBanner chapter={2}
+  classNames="absolute z-10 right-0 top-0"
+  notebooks={[
+    {label: "Google Colab", value: "https://colab.research.google.com/#fileId=https%3A//huggingface.co/agents-course/notebooks/blob/main/bonus-unit2/monitoring-and-evaluating-agents.ipynb"},
+]} />
+
+# Bonus Unit 2: Observability và Evaluation của Agent
+
+> [!TIP]
+> Các bạn có thể theo dõi code trong <a href="https://colab.research.google.com/#fileId=https%3A//huggingface.co/agents-course/notebooks/blob/main/bonus-unit2/monitoring-and-evaluating-agents.ipynb" target="_blank">notebook này</a> và chạy trên Google Colab.
+
+Trong notebook này, ta học cách **theo dõi các bước nội bộ (traces) của AI Agent** và **đánh giá hiệu suất** bằng các công cụ Observability mã nguồn mở.
+
+Theo dõi và đánh giá hành vi Agent là thiết yếu để:
+- Debug khi nhiệm vụ thất bại hoặc cho kết quả chưa tối ưu
+- Theo dõi chi phí và hiệu suất theo thời gian thực
+- Cải thiện độ tin cậy và an toàn nhờ phản hồi liên tục
+
+## Điều kiện tiên quyết của bài tập 🏗️
+
+Trước khi chạy notebook này, hãy đảm bảo các bạn đã:
+
+🔲 📚  **Học** [Giới thiệu về Agent](https://huggingface.co/learn/agents-course/unit1/introduction)
+
+🔲 📚  **Học** [Framework smolagents](https://huggingface.co/learn/agents-course/unit2/smolagents/introduction)
+
+## Bước 0: Cài đặt các thư viện cần thiết
+
+Ta cần một số thư viện để chạy, theo dõi và đánh giá Agent:
+
+
+```python
+%pip install langfuse 'smolagents[telemetry]' openinference-instrumentation-smolagents datasets 'smolagents[gradio]' gradio --upgrade
+```
+
+## Bước 1: Instrument Agent của bạn
+
+Trong notebook này, ta dùng [Langfuse](https://langfuse.com/) làm công cụ Observability, nhưng các bạn có thể dùng **bất kỳ dịch vụ tương thích OpenTelemetry nào khác**. Đoạn code dưới đây cho thấy cách thiết lập biến môi trường cho Langfuse (hoặc bất kỳ endpoint OTel nào) và cách instrument smolagent.
+
+**Lưu ý:** Nếu đang dùng LlamaIndex hoặc LangGraph, các bạn có thể tìm tài liệu về cách instrument chúng [tại đây](https://langfuse.com/docs/integrations/llama-index/workflows) và [tại đây](https://langfuse.com/docs/integrations/langchain/example-python-langgraph). 
+
+Trước hết, hãy thiết lập credentials của Langfuse dưới dạng biến môi trường. Lấy API keys của Langfuse bằng cách đăng ký [Langfuse Cloud](https://cloud.langfuse.com) hoặc [tự host Langfuse](https://langfuse.com/self-hosting).
+
+```python
+import os
+# Get keys for your project from the project settings page: https://cloud.langfuse.com
+os.environ["LANGFUSE_PUBLIC_KEY"] = "pk-lf-..." 
+os.environ["LANGFUSE_SECRET_KEY"] = "sk-lf-..." 
+os.environ["LANGFUSE_HOST"] = "https://cloud.langfuse.com" # 🇪🇺 EU region
+# os.environ["LANGFUSE_HOST"] = "https://us.cloud.langfuse.com" # 🇺🇸 US region
+```
+Chúng ta cũng cần cấu hình Hugging Face token cho các lời gọi inference.
+
+```python
+# Set your Hugging Face and other tokens/secrets as environment variable
+os.environ["HF_TOKEN"] = "hf_..." 
+```
+
+Với các biến môi trường đã sẵn sàng, ta có thể khởi tạo Langfuse client. `get_client()` khởi tạo Langfuse client bằng credentials cung cấp trong biến môi trường.
+
+```python
+from langfuse import get_client
+ 
+langfuse = get_client()
+ 
+# Verify connection
+if langfuse.auth_check():
+    print("Langfuse client is authenticated and ready!")
+else:
+    print("Authentication failed. Please check your credentials and host.")
+```
+
+Tiếp theo, ta có thể thiết lập `SmolagentsInstrumentor()` để instrument smolagent và gửi traces tới Langfuse.
+
+```python
+from openinference.instrumentation.smolagents import SmolagentsInstrumentor
+ 
+SmolagentsInstrumentor().instrument()
+```
+
+## Bước 2: Kiểm tra Instrumentation
+
+Đây là một CodeAgent đơn giản từ smolagents để tính `1+1`. Ta chạy nó để xác nhận instrumentation đang hoạt động đúng. Nếu mọi thứ được thiết lập đúng, các bạn sẽ thấy logs/spans trên dashboard Observability.
+
+
+```python
+from smolagents import InferenceClientModel, CodeAgent
+
+# Create a simple agent to test instrumentation
+agent = CodeAgent(
+    tools=[],
+    model=InferenceClientModel()
+)
+
+agent.run("1+1=")
+```
+
+Kiểm tra [Langfuse Traces Dashboard](https://cloud.langfuse.com) (hoặc công cụ Observability bạn chọn) để xác nhận rằng spans và logs đã được ghi nhận.
+
+Ảnh chụp ví dụ từ Langfuse:
+
+![Example trace in Langfuse](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/first-example-trace.png)
+
+_[Link to the trace](https://cloud.langfuse.com/project/cloramnkj0002jz088vzn1ja4/traces/1b94d6888258e0998329cdb72a371155?timestamp=2025-03-10T11%3A59%3A41.743Z)_
+
+## Bước 3: Quan sát và Đánh giá một Agent phức tạp hơn
+
+Giờ các bạn đã xác nhận instrumentation hoạt động, hãy thử một truy vấn phức tạp hơn để thấy các metrics nâng cao (mức dùng token, latency, chi phí, v.v.) được theo dõi như thế nào.
+
+
+```python
+from smolagents import (CodeAgent, DuckDuckGoSearchTool, InferenceClientModel)
+
+search_tool = DuckDuckGoSearchTool()
+agent = CodeAgent(tools=[search_tool], model=InferenceClientModel())
+
+agent.run("How many Rubik's Cubes could you fit inside the Notre Dame Cathedral?")
+```
+
+### Cấu trúc Trace
+
+Hầu hết các công cụ Observability ghi lại một **trace** chứa các **spans**, đại diện cho từng bước trong logic của Agent. Ở đây, trace chứa toàn bộ lần chạy Agent và các sub-spans cho:
+- Các lời gọi Tools (DuckDuckGoSearchTool)
+- Các lời gọi LLM (InferenceClientModel)
+
+Bạn có thể kiểm tra chúng để thấy chính xác thời gian được dùng ở đâu, bao nhiêu token được dùng, và nhiều hơn nữa:
+
+![Trace tree in Langfuse](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/trace-tree.png)
+
+_[Link to the trace](https://cloud.langfuse.com/project/cloramnkj0002jz088vzn1ja4/traces/1ac33b89ffd5e75d4265b62900c348ed?timestamp=2025-03-07T13%3A45%3A09.149Z&display=preview)_
+
+## Online Evaluation
+
+Ở phần trước, ta đã học sự khác biệt giữa online và offline evaluation. Bây giờ, ta xem cách theo dõi Agent trên production và đánh giá trực tiếp.
+
+### Các Metrics phổ biến cần theo dõi trên Production
+
+1. **Costs** — Instrumentation của smolagents ghi nhận mức dùng token, bạn có thể chuyển thành chi phí gần đúng bằng cách gán giá cho mỗi token.
+2. **Latency** — Quan sát thời gian hoàn thành mỗi bước, hoặc toàn bộ lần chạy.
+3. **User Feedback** — Người dùng có thể đưa phản hồi trực tiếp (thumbs up/down) để giúp tinh chỉnh hoặc sửa Agent.
+4. **LLM-as-a-Judge** — Dùng một LLM riêng để đánh giá đầu ra của Agent gần như theo thời gian thực (ví dụ kiểm tra toxicity hoặc độ đúng).
+
+Dưới đây, ta xem các ví dụ về các metrics này.
+
+#### 1. Costs
+
+Dưới đây là ảnh chụp cho thấy mức dùng của các lời gọi `Qwen2.5-Coder-32B-Instruct`. Điều này hữu ích để thấy các bước tốn kém và tối ưu Agent.
+
+![Costs](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/smolagents-costs.png)
+
+_[Link to the trace](https://cloud.langfuse.com/project/cloramnkj0002jz088vzn1ja4/traces/1ac33b89ffd5e75d4265b62900c348ed?timestamp=2025-03-07T13%3A45%3A09.149Z&display=preview)_
+
+#### 2. Latency
+
+Ta cũng có thể thấy mỗi bước mất bao lâu để hoàn thành. Trong ví dụ dưới đây, toàn bộ cuộc hội thoại mất 32 giây; các bạn có thể phân tích theo từng bước. Điều này giúp nhận diện điểm nghẽn và tối ưu Agent.
+
+![Latency](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/smolagents-latency.png)
+
+_[Link to the trace](https://cloud.langfuse.com/project/cloramnkj0002jz088vzn1ja4/traces/1ac33b89ffd5e75d4265b62900c348ed?timestamp=2025-03-07T13%3A45%3A09.149Z&display=preview)_
+
+#### 3. Thuộc tính bổ sung (Additional Attributes)
+
+Các bạn cũng có thể truyền thêm thuộc tính vào spans. Chúng có thể gồm `user_id`, `tags`, `session_id`, và metadata tùy chỉnh. Làm giàu traces bằng các chi tiết này rất quan trọng cho phân tích, debug và theo dõi hành vi ứng dụng trên nhiều người dùng hoặc phiên khác nhau.
+
+```python
+from smolagents import (CodeAgent, DuckDuckGoSearchTool, InferenceClientModel)
+
+search_tool = DuckDuckGoSearchTool()
+agent = CodeAgent(
+    tools=[search_tool],
+    model=InferenceClientModel()
+)
+
+with langfuse.start_as_current_span(
+    name="Smolagent-Trace",
+    ) as span:
+    
+    # Run your application here
+    response = agent.run("What is the capital of Germany?")
+ 
+    # Pass additional attributes to the span
+    span.update_trace(
+        input="What is the capital of Germany?",
+        output=response,
+        user_id="smolagent-user-123",
+        session_id="smolagent-session-123456789",
+        tags=["city-question", "testing-agents"],
+        metadata={"email": "user@langfuse.com"},
+        )
+ 
+# Flush events in short-lived applications
+langfuse.flush()
+```
+
+![Enhancing agent runs with additional metrics](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/smolagents-attributes.png)
+
+#### 4. User Feedback
+
+Nếu Agent được nhúng vào giao diện người dùng, các bạn có thể ghi nhận phản hồi trực tiếp (như thumbs-up/down trong chat UI). Dưới đây là ví dụ dùng [Gradio](https://gradio.app/) để nhúng một chat với cơ chế phản hồi đơn giản.
+
+Trong đoạn code dưới đây, khi người dùng gửi tin nhắn chat, ta ghi lại trace trong Langfuse. Nếu người dùng thích/không thích câu trả lời cuối, ta gắn một score vào trace.
+
+```python
+import gradio as gr
+from smolagents import (CodeAgent, InferenceClientModel)
+from langfuse import get_client
+
+langfuse = get_client()
+
+model = InferenceClientModel()
+agent = CodeAgent(tools=[], model=model, add_base_tools=True)
+
+trace_id = None
+
+def respond(prompt, history):
+    with langfuse.start_as_current_span(
+        name="Smolagent-Trace"):
+        
+        # Run your application here
+        output = agent.run(prompt)
+
+        global trace_id
+        trace_id = langfuse.get_current_trace_id()
+
+    history.append({"role": "assistant", "content": str(output)})
+    return history
+
+def handle_like(data: gr.LikeData):
+    # For demonstration, we map user feedback to a 1 (like) or 0 (dislike)
+    if data.liked:
+        langfuse.create_score(
+            value=1,
+            name="user-feedback",
+            trace_id=trace_id
+        )
+    else:
+        langfuse.create_score(
+            value=0,
+            name="user-feedback",
+            trace_id=trace_id
+        )
+
+with gr.Blocks() as demo:
+    chatbot = gr.Chatbot(label="Chat", type="messages")
+    prompt_box = gr.Textbox(placeholder="Type your message...", label="Your message")
+
+    # When the user presses 'Enter' on the prompt, we run 'respond'
+    prompt_box.submit(
+        fn=respond,
+        inputs=[prompt_box, chatbot],
+        outputs=chatbot
+    )
+
+    # When the user clicks a 'like' button on a message, we run 'handle_like'
+    chatbot.like(handle_like, None, None)
+
+demo.launch()
+```
+
+Phản hồi người dùng sau đó được ghi nhận trong công cụ Observability của bạn:
+
+![User feedback is being captured in Langfuse](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/user-feedback-gradio.png)
+
+#### 5. LLM-as-a-Judge
+
+LLM-as-a-Judge là cách khác để tự động đánh giá đầu ra của Agent. Các bạn có thể thiết lập một lời gọi LLM riêng để đo độ đúng, toxicity, phong cách, hoặc bất kỳ tiêu chí nào quan tâm.
+
+**Quy trình**:
+1. Định nghĩa một **Evaluation Template**, ví dụ "Kiểm tra xem văn bản có độc hại không."
+2. Mỗi khi Agent tạo đầu ra, truyền đầu ra đó tới LLM "judge" kèm template.
+3. LLM judge phản hồi bằng một rating hoặc nhãn mà các bạn ghi lại vào công cụ Observability.
+
+Ví dụ từ Langfuse:
+
+![LLM-as-a-Judge Evaluation Template](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/evaluator-template.png)
+![LLM-as-a-Judge Evaluator](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/evaluator.png)
+
+
+```python
+# Example: Checking if the agent’s output is toxic or not.
+from smolagents import (CodeAgent, DuckDuckGoSearchTool, InferenceClientModel)
+
+search_tool = DuckDuckGoSearchTool()
+agent = CodeAgent(tools=[search_tool], model=InferenceClientModel())
+
+agent.run("Can eating carrots improve your vision?")
+```
+
+Bạn có thể thấy câu trả lời trong ví dụ này được đánh giá là "not toxic".
+
+![LLM-as-a-Judge Evaluation Score](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/llm-as-a-judge-score.png)
+
+#### 6. Tổng quan Metrics Observability
+
+Tất cả các metrics này có thể trực quan hóa cùng nhau trên dashboard. Điều này giúp nhanh chóng thấy Agent hoạt động như thế nào trên nhiều phiên và theo dõi các metrics chất lượng theo thời gian.
+
+![Observability metrics overview](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/langfuse-dashboard.png)
+
+## Offline Evaluation
+
+Online evaluation thiết yếu cho phản hồi trực tiếp, nhưng các bạn cũng cần **offline evaluation** — các kiểm tra có hệ thống trước hoặc trong quá trình phát triển. Điều này giúp duy trì chất lượng và độ tin cậy trước khi đưa thay đổi vào production.
+
+### Đánh giá trên Dataset
+
+Trong offline evaluation, thường:
+1. Có một benchmark dataset (cặp prompt và đầu ra kỳ vọng)
+2. Chạy Agent trên dataset đó
+3. So sánh đầu ra với kết quả kỳ vọng hoặc dùng thêm một cơ chế chấm điểm
+
+Dưới đây, ta minh họa cách tiếp cận này với [GSM8K dataset](https://huggingface.co/datasets/openai/gsm8k), chứa các câu hỏi toán và lời giải.
+
+
+```python
+import pandas as pd
+from datasets import load_dataset
+
+# Fetch GSM8K from Hugging Face
+dataset = load_dataset("openai/gsm8k", 'main', split='train')
+df = pd.DataFrame(dataset)
+print("First few rows of GSM8K dataset:")
+print(df.head())
+```
+
+Tiếp theo, ta tạo một entity dataset trong Langfuse để theo dõi các lần chạy. Sau đó, thêm từng item từ dataset vào hệ thống. (Nếu không dùng Langfuse, các bạn có thể đơn giản lưu chúng trong database riêng hoặc file cục bộ để phân tích.)
+
+
+```python
+from langfuse import get_client
+langfuse = get_client()
+
+langfuse_dataset_name = "gsm8k_dataset_huggingface"
+
+# Create a dataset in Langfuse
+langfuse.create_dataset(
+    name=langfuse_dataset_name,
+    description="GSM8K benchmark dataset uploaded from Huggingface",
+    metadata={
+        "date": "2025-03-10", 
+        "type": "benchmark"
+    }
+)
+```
+
+
+```python
+for idx, row in df.iterrows():
+    langfuse.create_dataset_item(
+        dataset_name=langfuse_dataset_name,
+        input={"text": row["question"]},
+        expected_output={"text": row["answer"]},
+        metadata={"source_index": idx}
+    )
+    if idx >= 9: # Upload only the first 10 items for demonstration
+        break
+```
+
+![Dataset items in Langfuse](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/example-dataset.png)
+
+#### Chạy Agent trên Dataset
+
+Ta định nghĩa hàm helper `run_smolagent()` để:
+1. Bắt đầu một Langfuse span
+2. Chạy Agent trên prompt
+3. Ghi lại trace ID trong Langfuse
+
+Sau đó, ta lặp qua từng dataset item, chạy Agent, và liên kết trace với dataset item. Các bạn cũng có thể gắn một điểm Evaluation nhanh nếu muốn.
+
+
+```python
+from opentelemetry.trace import format_trace_id
+from smolagents import (CodeAgent, InferenceClientModel, LiteLLMModel)
+from langfuse import get_client
+ 
+langfuse = get_client()
+
+
+# Example: using InferenceClientModel or LiteLLMModel to access openai, anthropic, gemini, etc. models:
+model = InferenceClientModel()
+
+agent = CodeAgent(
+    tools=[],
+    model=model,
+    add_base_tools=True
+)
+
+dataset_name = "gsm8k_dataset_huggingface"
+current_run_name = "smolagent-notebook-run-01" # Identifies this specific evaluation run
+ 
+# Assume 'run_smolagent' is your instrumented application function
+def run_smolagent(question):
+    with langfuse.start_as_current_generation(name="qna-llm-call") as generation:
+        # Simulate LLM call
+        result = agent.run(question)
+ 
+        # Update the trace with the input and output
+        generation.update_trace(
+            input= question,
+            output=result,
+        )
+ 
+        return result
+ 
+dataset = langfuse.get_dataset(name=dataset_name) # Fetch your pre-populated dataset
+ 
+for item in dataset.items:
+ 
+    # Use the item.run() context manager
+    with item.run(
+        run_name=current_run_name,
+        run_metadata={"model_provider": "Hugging Face", "temperature_setting": 0.7},
+        run_description="Evaluation run for GSM8K dataset"
+    ) as root_span: # root_span is the root span of the new trace for this item and run.
+        # All subsequent langfuse operations within this block are part of this trace.
+ 
+        # Call your application logic
+        generated_answer = run_smolagent(question=item.input["text"])
+ 
+        print(item.input)
+```
+
+Các bạn có thể lặp lại quy trình này với các lựa chọn khác nhau về:
+- Models (OpenAI GPT, local LLM, v.v.)
+- Tools (có search so với không search)
+- Prompts (các system messages khác nhau)
+
+Sau đó so sánh chúng cạnh nhau trong công cụ Observability:
+
+![Dataset run overview](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/dataset_runs.png)
+![Dataset run comparison](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/bonus-unit2/dataset-run-comparison.png)
+
+
+## Kết luận
+
+Trong notebook này, ta đã học cách:
+1. **Thiết lập Observability** bằng smolagents + OpenTelemetry exporters
+2. **Kiểm tra Instrumentation** bằng cách chạy một Agent đơn giản
+3. **Thu thập Metrics chi tiết** (chi phí, latency, v.v.) qua công cụ Observability
+4. **Thu thập User Feedback** qua giao diện Gradio
+5. **Dùng LLM-as-a-Judge** để tự động đánh giá đầu ra
+6. **Thực hiện Offline Evaluation** với một benchmark dataset
+
+🤗 Chúc các bạn coding vui vẻ!

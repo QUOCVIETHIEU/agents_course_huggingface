@@ -1,0 +1,161 @@
+# Sử dụng Agents trong LlamaIndex
+
+Nhớ Alfred — Agent quản gia hữu ích từ trước chứ? Giờ cậu ấy sắp được nâng cấp!
+Sau khi nắm các Tools sẵn có trong LlamaIndex, ta trao cho Alfred khả năng mới để phục vụ tốt hơn.
+
+Nhưng trước khi tiếp tục, hãy nhắc lại điều khiến một Agent như Alfred hoạt động.
+Trong Unit 1, chúng ta đã học rằng:
+
+> Agent là hệ thống sử dụng mô hình AI để tương tác với môi trường nhằm đạt mục tiêu do người dùng xác định. Nó kết hợp lập luận, lập kế hoạch và thực thi hành động (thường qua các Tools bên ngoài) để hoàn thành nhiệm vụ.
+
+LlamaIndex hỗ trợ **ba loại reasoning Agents chính:**
+
+![Agents](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/llama-index/agents.png)
+
+1. `Function Calling Agents` — Hoạt động với các AI models có thể gọi functions cụ thể.
+2. `ReAct Agents` — Hoạt động với bất kỳ AI nào có chat hoặc text endpoint và xử lý nhiệm vụ reasoning phức tạp.
+3. `Advanced Custom Agents` — Dùng phương pháp phức tạp hơn để xử lý nhiệm vụ và Workflows phức tạp hơn.
+
+> [!TIP]
+> Tìm thêm thông tin về advanced Agents trên <a href="https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/agent/workflow/base_agent.py">BaseWorkflowAgent</a>
+
+## Khởi tạo Agents
+
+> [!TIP]
+> Các bạn có thể theo dõi code trong <a href="https://huggingface.co/agents-course/notebooks/blob/main/unit2/llama-index/agents.ipynb" target="_blank">notebook này</a> và chạy bằng Google Colab.
+
+Để tạo một Agent, ta bắt đầu bằng cách cung cấp **một tập functions/Tools định nghĩa khả năng của nó**.
+Hãy xem cách tạo Agent với một số Tools cơ bản. Tính đến thời điểm viết bài này, Agent tự động dùng function calling API (nếu có), hoặc vòng lặp ReAct Agent tiêu chuẩn.
+
+Các LLMs hỗ trợ tools/functions API còn khá mới, nhưng chúng cung cấp cách mạnh mẽ để gọi Tools — tránh prompting cụ thể và cho phép LLM tạo tool calls dựa trên schemas được cung cấp.
+
+ReAct Agents cũng giỏi với nhiệm vụ reasoning phức tạp và hoạt động với bất kỳ LLM nào có chat hoặc text completion. Chúng dài dòng hơn, và cho thấy lý do đằng sau các hành động mà chúng thực hiện.
+
+```python
+from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
+from llama_index.core.agent.workflow import AgentWorkflow
+from llama_index.core.tools import FunctionTool
+
+# define sample Tool -- type annotations, function names, and docstrings, are all included in parsed schemas!
+def multiply(a: int, b: int) -> int:
+    """Multiplies two integers and returns the resulting integer"""
+    return a * b
+
+# initialize llm
+llm = HuggingFaceInferenceAPI(model_name="Qwen/Qwen2.5-Coder-32B-Instruct")
+
+# initialize agent
+agent = AgentWorkflow.from_tools_or_functions(
+    [FunctionTool.from_defaults(multiply)],
+    llm=llm
+)
+```
+
+**Agents mặc định là stateless**, tuy nhiên chúng nhớ các tương tác trước bằng đối tượng `Context`.
+Điều này hữu ích khi bạn cần Agent nhớ tương tác trước — ví dụ chatbot duy trì ngữ cảnh qua nhiều tin nhắn, hoặc task manager theo dõi tiến độ theo thời gian.
+
+```python
+# stateless
+response = await agent.run("What is 2 times 2?")
+
+# remembering state
+from llama_index.core.workflow import Context
+
+ctx = Context(agent)
+
+response = await agent.run("My name is Bob.", ctx=ctx)
+response = await agent.run("What was my name again?", ctx=ctx)
+```
+
+Các bạn sẽ nhận thấy Agents trong `LlamaIndex` là async vì chúng dùng toán tử `await` của Python. Nếu mới với async code trong Python, hoặc cần ôn lại, họ có [hướng dẫn async xuất sắc](https://docs.llamaindex.ai/en/stable/getting_started/async_python/).
+
+Giờ ta đã nắm cơ bản — hãy xem cách dùng Tools phức tạp hơn trong Agents.
+
+## Tạo RAG Agents với QueryEngineTools
+
+**Agentic RAG là cách mạnh mẽ để dùng Agents trả lời câu hỏi về dữ liệu của bạn.** Ta truyền nhiều Tools khác nhau cho Alfred để giúp cậu ấy trả lời.
+Tuy nhiên, thay vì tự động trả lời dựa trên documents, Alfred quyết định dùng bất kỳ Tool hoặc flow nào khác để trả lời câu hỏi.
+
+![Agentic RAG](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit2/llama-index/agentic-rag.png)
+
+**Wrap `QueryEngine` như một Tool** cho Agent rất dễ.
+Khi làm vậy, ta cần **định nghĩa name và description**. LLM dùng thông tin này để gọi Tool đúng cách.
+Hãy xem cách load một `QueryEngineTool` dùng `QueryEngine` đã tạo trong [phần Components](components).
+
+```python
+from llama_index.core.tools import QueryEngineTool
+
+query_engine = index.as_query_engine(llm=llm, similarity_top_k=3) # as shown in the Components in LlamaIndex section
+
+query_engine_tool = QueryEngineTool.from_defaults(
+    query_engine=query_engine,
+    name="name",
+    description="a specific description",
+    return_direct=False,
+)
+query_engine_agent = AgentWorkflow.from_tools_or_functions(
+    [query_engine_tool],
+    llm=llm,
+    system_prompt="You are a helpful assistant that has access to a database containing persona descriptions. "
+)
+```
+
+## Tạo hệ thống Multi-agent
+
+Class `AgentWorkflow` cũng hỗ trợ trực tiếp hệ thống multi-agent. Bằng cách cho mỗi Agent một name và description, hệ thống duy trì một speaker đang hoạt động duy nhất; mỗi Agent có khả năng chuyển giao cho Agent khác.
+
+Thu hẹp phạm vi của mỗi Agent giúp tăng độ chính xác tổng quát khi phản hồi tin nhắn người dùng.
+
+**Agents trong LlamaIndex cũng dùng trực tiếp như Tools** cho Agents khác — phù hợp tình huống phức tạp và tùy chỉnh hơn.
+
+```python
+from llama_index.core.agent.workflow import (
+    AgentWorkflow,
+    FunctionAgent,
+    ReActAgent,
+)
+
+# Define some tools
+def add(a: int, b: int) -> int:
+    """Add two numbers."""
+    return a + b
+
+
+def subtract(a: int, b: int) -> int:
+    """Subtract two numbers."""
+    return a - b
+
+
+# Create agent configs
+# NOTE: we can use FunctionAgent or ReActAgent here.
+# FunctionAgent works for LLMs with a function calling API.
+# ReActAgent works for any LLM.
+calculator_agent = ReActAgent(
+    name="calculator",
+    description="Performs basic arithmetic operations",
+    system_prompt="You are a calculator assistant. Use your tools for any math operation.",
+    tools=[add, subtract],
+    llm=llm,
+)
+
+query_agent = ReActAgent(
+    name="info_lookup",
+    description="Looks up information about XYZ",
+    system_prompt="Use your tool to query a RAG system to answer information about XYZ",
+    tools=[query_engine_tool],
+    llm=llm
+)
+
+# Create and run the workflow
+agent = AgentWorkflow(
+    agents=[calculator_agent, query_agent], root_agent="calculator"
+)
+
+# Run the system
+response = await agent.run(user_msg="Can you add 5 and 3?")
+```
+
+> [!TIP]
+> Vẫn chưa đủ? Còn nhiều điều về Agents và Tools trong LlamaIndex trong <a href="https://docs.llamaindex.ai/en/stable/examples/agent/agent_workflow_basic/">AgentWorkflow Basic Introduction</a> hoặc <a href="https://docs.llamaindex.ai/en/stable/understanding/agent/">Agent Learning Guide</a> — nơi các bạn đọc thêm về streaming, context serialization và human-in-the-loop!
+
+Giờ ta đã nắm cơ bản về Agents và Tools trong LlamaIndex — hãy xem cách dùng LlamaIndex để **tạo Workflows có thể cấu hình và quản lý được!**

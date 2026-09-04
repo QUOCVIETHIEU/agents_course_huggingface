@@ -1,0 +1,40 @@
+# Giới thiệu use case Agentic RAG
+
+![Agentic RAG banner](https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/unit3/agentic-rag/thumbnail.jpg)
+
+Trong unit này, ta giúp Alfred — Agent thân thiện đang tổ chức buổi gala — dùng Agentic RAG để tạo một Tool trả lời câu hỏi về khách mời.
+
+> [!TIP]
+> Đây là use case Agentic RAG mang tính thực tế, các bạn có thể áp dụng vào dự án hoặc nơi làm việc. Muốn tận dụng tối đa? Hãy thử với use case của riêng mình và chia sẻ trên Discord!
+
+
+Các bạn có thể chọn bất kỳ framework nào đã thảo luận trong khóa học. Khóa học cung cấp mẫu code cho từng framework trong các tab riêng.
+
+## Một buổi Gala đáng nhớ
+
+Giờ thì đến lúc bắt tay vào một use case thực tế. Hãy dựng bối cảnh!
+
+**Các bạn quyết định tổ chức buổi tiệc xa hoa nhất thế kỷ.** Tiệc thịnh soạn, vũ công mê hoặc, DJ nổi tiếng, đồ uống tinh tế, pháo hoa ngoạn mục, và còn nhiều hơn thế.
+
+Alfred, Agent thân thiện trong khu phố, chuẩn bị chăm sóc mọi nhu cầu cho buổi tiệc — **và Alfred sẽ tự quản lý mọi thứ**. Để làm được, anh ấy cần truy cập mọi thông tin về tiệc: thực đơn, khách mời, lịch trình, dự báo thời tiết, và nhiều hơn nữa.
+
+Không chỉ vậy, anh ấy còn phải đảm bảo buổi tiệc thành công: **trả lời mọi câu hỏi về sự kiện trong khi nó diễn ra**, đồng thời xử lý các tình huống bất ngờ.
+
+Anh ấy không làm một mình được, nên ta cần trang bị đủ thông tin và Tools.
+
+Trước hết, hãy đưa cho anh ấy danh sách các yêu cầu cứng cho buổi gala.
+
+## Các yêu cầu của buổi Gala
+
+Một người có học thức đúng nghĩa thời **Phục hưng** cần ba phẩm chất chính.
+Họ cần uyên thâm về **thể thao, văn hóa và khoa học**. Vì vậy, ta cần gây ấn tượng với khách mời bằng kiến thức và mang đến một buổi gala khó quên.
+Tuy nhiên, để tránh xung đột, một số **chủ đề như chính trị và tôn giáo cần tránh tại buổi gala.** Đó phải là buổi tiệc vui vẻ, không tranh cãi về niềm tin và lý tưởng.
+
+Theo phép lịch sự, **chủ nhà tốt cần nắm xuất thân của khách mời**, gồm sở thích và công việc. Chủ nhà tốt cũng biết kể chuyện và chia sẻ giai thoại về khách mời với nhau.
+
+Cuối cùng, ta cần **kiến thức chung về thời tiết** và cập nhật theo thời gian thực, để chọn thời điểm hoàn hảo bắn pháo hoa và kết thúc gala thật rực rỡ! 🎆
+
+Như các bạn thấy, Alfred cần rất nhiều thông tin để tổ chức buổi gala.
+May mắn thay, ta có thể chuẩn bị cho Alfred bằng một chút **đào tạo Retrieval Augmented Generation (RAG)!**
+
+Hãy bắt đầu bằng việc tạo các Tools mà Alfred cần để tổ chức buổi gala!
