@@ -25,7 +25,7 @@ except ModuleNotFoundError as exc:
 ROOT = Path(__file__).resolve().parent
 UNITS = ROOT / "units"
 OUT = ROOT / "preview-vi"
-HF_LOGO = "https://huggingface.co/front/assets/huggingface_logo-noborder.svg"
+HF_LOGO = "/huggingface.svg"
 HF_COURSE_URL = "https://hf.co/learn/agents-course"
 HF_REPO_URL = "https://github.com/huggingface/agents-course"
 HF_COURSE_SHORT = "hf.co/learn/agents-course"
@@ -60,8 +60,6 @@ LANGS = {
         "auth_title": "Save progress to your account",
         "auth_body": "Progress stays on this device by default. Sign in only if you want the same progress on other devices. You can keep learning without an account.",
         "auth_cancel": "Keep local only",
-        "sync_cloud": "Cloud",
-        "sync_local": "This device",
         "reset_confirm_cloud": "Clear all learning progress on this device and in your account?",
         "source_menu": "Source",
         "source_title": "Course source",
@@ -97,8 +95,6 @@ LANGS = {
         "auth_title": "Lưu tiến độ theo tài khoản",
         "auth_body": "Mặc định tiến độ chỉ lưu trên thiết bị này. Đăng nhập khi bạn muốn đồng bộ sang máy khác. Bạn vẫn học bình thường mà không cần tài khoản.",
         "auth_cancel": "Giữ lưu local",
-        "sync_cloud": "Cloud",
-        "sync_local": "Thiết bị này",
         "reset_confirm_cloud": "Xóa toàn bộ tiến độ trên thiết bị này và trên tài khoản?",
         "source_menu": "Nguồn",
         "source_title": "Nguồn khóa học",
@@ -229,96 +225,111 @@ button, select { font: inherit; }
 .topbar .right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.4rem;
   margin-left: auto;
 }
-.prog-chip {
-  display: flex;
+/* Shared compact control chrome — same height / radius / type */
+.tb-ctl,
+.prog-chip,
+.lang-select,
+.info-btn,
+.account-btn,
+.curr-toggle {
+  box-sizing: border-box;
+  height: 30px;
+  display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0 0.7rem;
+  border: 0.5px solid rgba(255,255,255,.22);
+  border-radius: 8px;
   background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 999px;
-  padding: 0.28rem 0.65rem 0.28rem 0.35rem;
+  color: rgba(255,255,255,.92);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
+.tb-ctl:hover,
+.prog-chip:hover,
+.info-btn:hover,
+.account-btn:hover,
+.curr-toggle:hover {
+  background: rgba(255,255,255,.14);
+  border-color: rgba(255,255,255,.32);
+  color: #fff;
+}
+.lang-select:hover {
+  background-color: rgba(255,255,255,.14);
+  border-color: rgba(255,255,255,.32);
+  color: #fff;
+}
+.prog-chip {
+  padding: 0 0.65rem 0 0.4rem;
+  gap: 0.4rem;
+  cursor: default;
+}
+.prog-chip:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); }
 .ring {
   --p: 0;
-  width: 28px; height: 28px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: conic-gradient(var(--accent) calc(var(--p) * 1%), rgba(255,255,255,.2) 0);
-  display: grid; place-items: center;
+  background: conic-gradient(#ffd21e calc(var(--p) * 1%), rgba(255,255,255,.22) 0);
+  display: grid;
+  place-items: center;
+  flex: none;
 }
 .ring::after {
   content: "";
-  width: 20px; height: 20px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--ink);
 }
 .prog-chip .pct {
-  font-size: 0.78rem;
-  font-weight: 700;
-  min-width: 2.4rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  min-width: 1.7rem;
+  letter-spacing: -0.02em;
 }
 .lang-select {
   appearance: none;
   -webkit-appearance: none;
-  background: rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 0.45rem center/10px no-repeat;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 4px;
-  padding: 0.35rem 1.4rem 0.35rem 0.5rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
+  background-color: rgba(255,255,255,.08);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+  background-size: 9px;
+  padding-right: 1.35rem;
+  padding-left: 0.6rem;
 }
 .lang-select option { color: #111; }
 .curr-toggle {
   display: none;
-  border: 1px solid rgba(255,255,255,.2);
-  background: transparent;
-  color: #fff;
-  border-radius: 4px;
-  padding: 0.35rem 0.65rem;
-  font-size: 0.78rem;
-  font-weight: 650;
-  cursor: pointer;
 }
 .info-btn {
-  border: 1px solid rgba(255,255,255,.22);
-  background: transparent;
-  color: rgba(255,255,255,.92);
-  border-radius: 4px;
-  padding: 0.32rem 0.55rem;
-  font-size: 0.76rem;
-  font-weight: 650;
-  cursor: pointer;
+  background: rgba(255,255,255,.08);
 }
-.info-btn:hover { background: rgba(255,255,255,.1); }
 .account-wrap {
   position: relative;
   display: none;
 }
 .account-wrap.enabled { display: block; }
 .account-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border: 1px solid rgba(255,255,255,.22);
-  background: rgba(255,255,255,.08);
-  color: #fff;
-  border-radius: 4px;
-  padding: 0.32rem 0.6rem;
-  font-size: 0.76rem;
-  font-weight: 650;
-  cursor: pointer;
-  max-width: 11rem;
+  max-width: 9.5rem;
 }
-.account-btn:hover { background: rgba(255,255,255,.14); }
 .account-btn img {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   object-fit: cover;
+  flex: none;
 }
 .account-btn .label {
   overflow: hidden;
@@ -333,16 +344,16 @@ button, select { font: inherit; }
   min-width: 12rem;
   background: #fff;
   color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  box-shadow: 0 10px 28px rgba(28,29,31,.18);
-  padding: 0.45rem;
+  border: 0.5px solid rgba(0,0,0,.12);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.16);
+  padding: 0.4rem;
   z-index: 60;
 }
 .account-wrap.open .account-menu { display: block; }
 .account-menu .who {
   padding: 0.45rem 0.55rem 0.55rem;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 0.5px solid rgba(0,0,0,.08);
   margin-bottom: 0.3rem;
 }
 .account-menu .who strong {
@@ -360,24 +371,13 @@ button, select { font: inherit; }
   border: 0;
   background: transparent;
   padding: 0.45rem 0.55rem;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   color: var(--ink);
 }
-.account-menu button:hover { background: #f3f4f5; }
-.sync-pill {
-  display: none;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: rgba(255,255,255,.78);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 999px;
-  padding: 0.18rem 0.5rem;
-}
-.sync-pill.on { display: inline-flex; }
+.account-menu button:hover { background: rgba(120,120,128,.12); }
 .auth-dialog {
   border: 0;
   padding: 0;
@@ -445,7 +445,7 @@ button, select { font: inherit; }
   flex: 1;
   width: min(820px, 100%);
   margin: 0 auto;
-  padding: 1.75rem 1.5rem 7rem;
+  padding: 1.75rem 1.5rem 1.5rem;
 }
 .lesson-kicker {
   display: flex;
@@ -539,53 +539,102 @@ button, select { font: inherit; }
 }
 .prose th { background: #f7f9fa; }
 
-/* Bottom action bar — compact, actions on the right */
-.bottombar {
+.lesson-end-sentinel {
+  height: 1px;
+  width: 100%;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* Apple-like compact footer — frosted, quiet, precise */
+.lesson-footer {
   position: sticky;
   bottom: 0;
   z-index: 30;
-  background: rgba(255,255,255,.94);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid var(--line);
-  padding: 0.65rem 1.1rem;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+  box-shadow: none;
+  transform: translateY(110%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+}
+.lesson-footer.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.lesson-footer-inner {
+  width: min(820px, 100%);
+  margin: 0 auto;
+  min-height: 52px;
+  padding: 0.55rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
 }
-.bottombar .nav-left,
-.bottombar .nav-right {
+.lesson-footer .nav-left,
+.lesson-footer .nav-right {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
 }
-.bottombar .nav-right { margin-left: auto; }
-.mark-slot {
-  display: none;
-  align-items: center;
+.lesson-footer .nav-right { margin-left: auto; }
+.lesson-footer .btn {
+  border: 0;
+  border-radius: 980px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.8125rem;
+  font-weight: 510;
+  letter-spacing: -0.01em;
+  gap: 0.35rem;
+  box-shadow: none;
+  transition: background 0.18s ease, color 0.18s ease, opacity 0.18s ease, transform 0.12s ease;
 }
-.mark-slot.is-ready { display: inline-flex; }
-.mark-slot .btn {
-  animation: markIn .22s ease;
+.lesson-footer .btn:active {
+  transform: scale(0.98);
 }
-@keyframes markIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+.lesson-footer .btn-ghost {
+  background: rgba(120, 120, 128, 0.12);
+  color: #1c1d1f;
 }
-.complete-hint {
-  display: none;
-  font-size: 0.72rem;
-  color: var(--muted);
-  max-width: 11rem;
-  line-height: 1.3;
-  text-align: right;
+.lesson-footer .btn-ghost:hover {
+  background: rgba(120, 120, 128, 0.18);
+  color: #1c1d1f;
+  border-color: transparent;
 }
-.complete-hint.is-visible { display: block; }
-.lesson-end {
-  height: 1px;
-  width: 100%;
-  margin: 0;
-  pointer-events: none;
+.lesson-footer .btn-primary {
+  background: #1c1d1f;
+  color: #fff;
+}
+.lesson-footer .btn-primary:hover {
+  background: #000;
+  color: #fff;
+  border-color: transparent;
+}
+.lesson-footer .btn-ok {
+  background: rgba(52, 199, 89, 0.14);
+  color: #1b7f3a;
+}
+.lesson-footer .btn-ok:hover {
+  background: rgba(52, 199, 89, 0.22);
+}
+.lesson-footer .btn .check {
+  width: 0.9rem;
+  height: 0.9rem;
+  font-size: 0.58rem;
+  border-width: 1.5px;
+  border-color: currentColor;
+}
+.lesson-footer .btn .arrow {
+  width: 0.85em;
+  height: 0.85em;
+  opacity: 0.7;
 }
 .btn {
   display: inline-flex;
@@ -644,10 +693,10 @@ button, select { font: inherit; }
   display: block;
 }
 
-/* ===== Curriculum panel ===== */
+/* ===== Curriculum panel (clean / Apple-like) ===== */
 .curriculum {
-  border-left: 1px solid var(--line);
-  background: #fff;
+  border-left: 0.5px solid rgba(0,0,0,.12);
+  background: #fbfbfd;
   height: calc(100vh - var(--top));
   position: sticky;
   top: var(--top);
@@ -656,32 +705,43 @@ button, select { font: inherit; }
   min-width: 0;
 }
 .curr-head {
-  padding: 1rem 1rem 0.85rem;
-  border-bottom: 1px solid var(--line);
+  padding: 1.15rem 1.15rem 0.95rem;
+  background: rgba(255,255,255,.72);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 0.5px solid rgba(0,0,0,.08);
 }
 .curr-head h2 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 750;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 .curr-head .meta {
-  margin-top: 0.35rem;
-  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--muted);
+  letter-spacing: -0.01em;
 }
-.curr-head .meta strong { color: var(--ink); }
+.curr-head .meta strong {
+  color: var(--ink);
+  font-weight: 600;
+}
 .curr-track {
-  margin-top: 0.7rem;
-  height: 6px;
-  background: #e4e8eb;
+  margin-top: 0.75rem;
+  height: 3px;
+  background: rgba(120,120,128,.16);
   border-radius: 999px;
   overflow: hidden;
 }
 .curr-fill {
   height: 100%;
   width: 0%;
-  background: var(--accent);
-  transition: width .25s ease;
+  background: var(--ink);
+  border-radius: 999px;
+  transition: width .3s cubic-bezier(.22,1,.36,1);
 }
 .curr-actions {
   margin-top: 0.55rem;
@@ -692,40 +752,53 @@ button, select { font: inherit; }
   border: 0;
   background: none;
   color: var(--muted);
-  font-size: 0.75rem;
-  text-decoration: underline;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   cursor: pointer;
   padding: 0;
+  text-decoration: none;
 }
 .curr-actions button:hover { color: var(--ink); }
 .curr-body {
   overflow-y: auto;
   flex: 1;
+  padding: 0.35rem 0 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,.15) transparent;
 }
 .section {
-  border-bottom: 1px solid var(--line);
+  border: 0;
+  margin: 0 0.55rem;
+}
+.section + .section {
+  border-top: 0.5px solid rgba(0,0,0,.08);
 }
 .section-btn {
   width: 100%;
   display: flex;
   align-items: flex-start;
-  gap: 0.65rem;
+  gap: 0.55rem;
   text-align: left;
-  background: #f7f9fa;
+  background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--line);
-  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  padding: 0.7rem 0.65rem;
   cursor: pointer;
   color: var(--ink);
+  transition: background .15s ease;
 }
-.section-btn:hover { background: #eef1f3; }
+.section-btn:hover { background: rgba(120,120,128,.1); }
+.section.open > .section-btn {
+  background: transparent;
+}
 .section-btn .chev {
-  margin-top: 0.1rem;
-  width: 0.85rem;
-  height: 0.85rem;
+  margin-top: 0.15rem;
+  width: 0.75rem;
+  height: 0.75rem;
   flex: none;
-  color: var(--muted);
-  transition: transform .15s;
+  color: rgba(60,60,67,.45);
+  transition: transform .22s cubic-bezier(.22,1,.36,1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -738,47 +811,62 @@ button, select { font: inherit; }
 .section.open .section-btn .chev { transform: rotate(90deg); }
 .section-btn .s-title {
   flex: 1;
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
 }
 .section-btn .s-meta {
   display: block;
-  margin-top: 0.2rem;
-  font-size: 0.75rem;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  color: var(--muted);
+  color: rgba(60,60,67,.55);
+  letter-spacing: -0.01em;
 }
-.section-lessons { display: none; }
+.section-lessons {
+  display: none;
+  padding: 0 0 0.45rem 0.15rem;
+}
 .section.open .section-lessons { display: block; }
 .lesson-link {
   display: flex;
   align-items: flex-start;
-  gap: 0.65rem;
-  padding: 0.7rem 1rem 0.7rem 1.15rem;
+  gap: 0.55rem;
+  margin: 0.1rem 0.25rem;
+  padding: 0.55rem 0.65rem;
   text-decoration: none;
-  color: var(--ink);
-  border-bottom: 1px solid #eef1f3;
-  font-size: 0.86rem;
+  color: #3a3a3c;
+  border: 0;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 450;
   line-height: 1.35;
+  letter-spacing: -0.01em;
+  transition: background .15s ease, color .15s ease;
 }
-.lesson-link:hover { background: #fafbfc; }
+.lesson-link:hover {
+  background: rgba(120,120,128,.1);
+  color: var(--ink);
+}
 .lesson-link.active {
-  background: var(--lesson-active);
-  box-shadow: inset 3px 0 0 var(--accent);
-  font-weight: 650;
+  background: rgba(184,134,11,.12);
+  box-shadow: none;
+  color: var(--ink);
+  font-weight: 600;
 }
 .lesson-link .status {
   flex: none;
-  width: 18px; height: 18px;
+  width: 16px;
+  height: 16px;
   margin-top: 1px;
   border-radius: 50%;
-  border: 1.5px solid #8b9298;
-  background: #fff;
+  border: 1.5px solid rgba(60,60,67,.28);
+  background: transparent;
 }
 .lesson-link.done .status {
-  border-color: var(--ok);
-  background: var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.2' d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E") center/11px no-repeat;
+  border-color: transparent;
+  background: #34c759 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.2' d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E") center/10px no-repeat;
 }
 .lesson-link .l-title { flex: 1; min-width: 0; }
 
@@ -787,7 +875,7 @@ button, select { font: inherit; }
   display: none;
   position: fixed;
   inset: var(--top) 0 0 0;
-  background: rgba(28,29,31,.45);
+  background: rgba(0,0,0,.28);
   z-index: 40;
 }
 @media (max-width: 980px) {
@@ -800,18 +888,13 @@ button, select { font: inherit; }
     height: calc(100vh - var(--top));
     z-index: 45;
     transform: translateX(105%);
-    transition: transform .2s ease;
-    box-shadow: -8px 0 24px rgba(0,0,0,.18);
+    transition: transform .28s cubic-bezier(.22,1,.36,1);
+    box-shadow: -8px 0 40px rgba(0,0,0,.12);
+    background: #fff;
   }
   body.curr-open .curriculum { transform: translateX(0); }
   body.curr-open .curr-backdrop { display: block; }
   .curr-toggle { display: inline-flex; }
-  .stage-inner { padding-bottom: 6.5rem; }
-  .bottombar { flex-wrap: wrap; }
-  .bottombar .nav-left { order: 1; width: 100%; }
-  .bottombar .nav-right { order: 2; width: 100%; margin-left: 0; justify-content: flex-end; }
-  .bottombar .nav-right .btn { flex: 0 1 auto; }
-  .complete-hint { max-width: none; text-align: left; margin-right: auto; }
 }
 """
 
@@ -825,7 +908,6 @@ let db = null;
 let currentUser = null;
 let cloudSaveTimer = null;
 let authReady = false;
-let lessonReadThrough = false;
 
 function emptyProgress() {
   return { completed: {}, lastVisited: null };
@@ -985,8 +1067,6 @@ function refreshUI() {
   const btn = document.getElementById('mark-btn');
   const label = document.getElementById('mark-label');
   const icon = document.getElementById('mark-icon');
-  const markSlot = document.getElementById('mark-slot');
-  const hint = document.getElementById('complete-hint');
   if (btn && local) {
     const done = !!completed[local];
     btn.classList.toggle('btn-ok', done);
@@ -995,17 +1075,6 @@ function refreshUI() {
       ? (document.body.dataset.markUndone || 'Incomplete')
       : (document.body.dataset.complete || 'Complete');
     if (icon) icon.textContent = done ? '✓' : '';
-    const showMark = done || lessonReadThrough;
-    if (markSlot) markSlot.classList.toggle('is-ready', showMark);
-    if (hint) hint.classList.toggle('is-visible', !showMark);
-  }
-
-  const syncPill = document.getElementById('sync-pill');
-  if (syncPill) {
-    syncPill.classList.toggle('on', true);
-    syncPill.textContent = currentUser
-      ? (document.body.dataset.syncCloud || 'Cloud')
-      : (document.body.dataset.syncLocal || 'This device');
   }
 }
 
@@ -1014,29 +1083,30 @@ function openSourceDialog() {
   if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
 }
 
+function setLessonFooterVisible(show) {
+  const footer = document.getElementById('lesson-footer');
+  if (!footer) return;
+  footer.classList.toggle('is-visible', !!show);
+  footer.setAttribute('aria-hidden', show ? 'false' : 'true');
+}
+
 function watchLessonEnd() {
-  const end = document.getElementById('lesson-end');
-  if (!end) {
-    lessonReadThrough = true;
-    refreshUI();
+  const sentinel = document.getElementById('lesson-end-sentinel');
+  const footer = document.getElementById('lesson-footer');
+  if (!footer) return;
+  if (!sentinel) {
+    setLessonFooterVisible(true);
     return;
   }
   const io = new IntersectionObserver((entries) => {
-    if (entries.some((e) => e.isIntersecting)) {
-      lessonReadThrough = true;
-      refreshUI();
-      io.disconnect();
-    }
-  }, { root: null, threshold: 0, rootMargin: '0px 0px -48px 0px' });
-  io.observe(end);
-  // Short lessons already fully visible
+    const hit = entries.some((e) => e.isIntersecting);
+    setLessonFooterVisible(hit);
+  }, { root: null, threshold: 0, rootMargin: '0px 0px -8% 0px' });
+  io.observe(sentinel);
+  // Short lessons: end already on screen
   requestAnimationFrame(() => {
-    const rect = end.getBoundingClientRect();
-    if (rect.top < window.innerHeight - 48) {
-      lessonReadThrough = true;
-      refreshUI();
-      io.disconnect();
-    }
+    const rect = sentinel.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.92) setLessonFooterVisible(true);
   });
 }
 
@@ -1315,8 +1385,11 @@ def shell(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html_lib.escape(title)} · {html_lib.escape(meta["course_title"])}</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
+<link rel="shortcut icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 <meta name="theme-color" content="#1c1d1f">
 <style>{CSS}</style>
@@ -1334,8 +1407,6 @@ def shell(
   data-sign-in-google="{html_lib.escape(meta["sign_in_google"])}"
   data-sign-out="{html_lib.escape(meta["sign_out"])}"
   data-signed-in-as="{html_lib.escape(meta["signed_in_as"])}"
-  data-sync-cloud="{html_lib.escape(meta["sync_cloud"])}"
-  data-sync-local="{html_lib.escape(meta["sync_local"])}"
 >
 <header class="topbar">
   <a class="brand" href="/{lang}/unit0/introduction.html">
@@ -1344,7 +1415,6 @@ def shell(
   </a>
   <div class="course-name">{html_lib.escape(meta["course_title"])}</div>
   <div class="right">
-    <span class="sync-pill" id="sync-pill"></span>
     <div class="prog-chip" title="{html_lib.escape(meta["progress"])}">
       <span class="ring" aria-hidden="true"></span>
       <span class="pct" data-progress-pct>0%</span>
@@ -1374,21 +1444,20 @@ def shell(
       <article class="prose">
 {body}
       </article>
-      <div id="lesson-end" class="lesson-end" aria-hidden="true"></div>
+      <div id="lesson-end-sentinel" class="lesson-end-sentinel" aria-hidden="true"></div>
     </div>
-    <div class="bottombar">
-      <div class="nav-left">{prev_btn}</div>
-      <div class="nav-right">
-        <span class="complete-hint" id="complete-hint">{html_lib.escape(meta["complete_hint"])}</span>
-        <span class="mark-slot" id="mark-slot">
+    <footer class="lesson-footer" id="lesson-footer" aria-label="Lesson navigation">
+      <div class="lesson-footer-inner">
+        <div class="nav-left">{prev_btn}</div>
+        <div class="nav-right">
           <button type="button" class="btn btn-primary" id="mark-btn">
             <span class="check" id="mark-icon"></span>
             <span id="mark-label">{html_lib.escape(meta["complete"])}</span>
           </button>
-        </span>
-        {next_btn}
+          {next_btn}
+        </div>
       </div>
-    </div>
+    </footer>
   </main>
 {curriculum}
 </div>
@@ -1514,45 +1583,64 @@ def firebase_web_config() -> dict[str, str]:
 
 
 def write_app_icons() -> None:
-    src = ROOT / "assets" / "app-icon.svg"
+    src = ROOT / "assets" / "app-icon-cap.svg"
     if src.exists():
         shutil.copyfile(src, OUT / "icon.svg")
         shutil.copyfile(src, OUT / "favicon.svg")
+        shutil.copyfile(src, ROOT / "assets" / "app-icon.svg")
     try:
         from PIL import Image, ImageDraw
     except ImportError:
-        print("  Icons: SVG only (install pillow for PNG apple-touch-icon)")
+        print("  Icons: SVG only (install pillow for PNG/ICO favicons)")
         return
 
-    size = 180
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    # rounded tile
-    draw.rounded_rectangle((0, 0, size - 1, size - 1), radius=40, fill=(28, 29, 31, 255))
-    gold = (184, 134, 11, 255)
-    gold_lt = (212, 160, 23, 255)
-    cream = (247, 241, 225, 255)
-    ink = (28, 29, 31, 255)
-    # open book — left page
-    draw.polygon(
-        [(28, 124), (28, 66), (90, 78), (90, 136)],
-        fill=gold,
-    )
-    # right page
-    draw.polygon(
-        [(152, 124), (152, 66), (90, 78), (90, 136)],
-        fill=gold_lt,
-    )
-    draw.line([(90, 78), (90, 136)], fill=ink, width=4)
-    # AI spark nodes
-    draw.ellipse((82, 28, 98, 44), fill=cream)
-    draw.ellipse((58, 46, 72, 60), fill=gold)
-    draw.ellipse((108, 46, 122, 60), fill=gold)
-    draw.line([(86, 40), (68, 50)], fill=cream, width=3)
-    draw.line([(94, 40), (112, 50)], fill=cream, width=3)
-    img.save(OUT / "apple-touch-icon.png", "PNG")
-    img.resize((32, 32), Image.Resampling.LANCZOS).save(OUT / "favicon-32.png", "PNG")
-    print("  Icons: SVG + PNG")
+    def draw_icon(size: int) -> Image.Image:
+        """Rasterize graduation-cap mark to match app-icon-cap.svg (64 viewBox)."""
+        img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        s = size / 64.0
+
+        def xy(*pts: float) -> list[tuple[float, float]]:
+            out = []
+            it = iter(pts)
+            for x in it:
+                y = next(it)
+                out.append((x * s, y * s))
+            return out
+
+        def oval(cx: float, cy: float, r: float, fill: tuple[int, int, int, int]) -> None:
+            draw.ellipse(
+                ((cx - r) * s, (cy - r) * s, (cx + r) * s, (cy + r) * s),
+                fill=fill,
+            )
+
+        radius = max(2, int(14 * s))
+        draw.rounded_rectangle((0, 0, size - 1, size - 1), radius=radius, fill=(28, 29, 31, 255))
+        # base / gown
+        draw.polygon(xy(20, 30, 20, 42, 32, 49, 44, 42, 44, 30, 32, 36), fill=(212, 160, 23, 255))
+        # mortarboard
+        draw.polygon(xy(10, 28, 32, 18, 54, 28, 32, 38), fill=(184, 134, 11, 255))
+        # tassel
+        tw = max(1, int(2.2 * s))
+        draw.line(xy(50, 28, 50, 40), fill=(139, 105, 20, 255), width=tw)
+        oval(50, 42, 2.4, (247, 241, 225, 255))
+        # neural spark
+        oval(32, 10, 2.8, (184, 134, 11, 255))
+        oval(26.2, 15.2, 2.2, (247, 241, 225, 255))
+        oval(38.2, 15.2, 2.2, (247, 241, 225, 255))
+        lw = max(1, int(1.5 * s))
+        draw.line(xy(26, 15, 30.5, 11.5), fill=(247, 241, 225, 255), width=lw)
+        draw.line(xy(38, 15, 33.5, 11.5), fill=(247, 241, 225, 255), width=lw)
+        return img
+
+    icon180 = draw_icon(180)
+    icon180.save(OUT / "apple-touch-icon.png", "PNG")
+    icon32 = draw_icon(32)
+    icon16 = draw_icon(16)
+    icon32.save(OUT / "favicon-32.png", "PNG")
+    icon16.save(OUT / "favicon-16.png", "PNG")
+    icon32.save(OUT / "favicon.ico", format="ICO", sizes=[(16, 16), (32, 32)])
+    print("  Icons: cap SVG + PNG + ICO")
 
 
 def write_runtime_assets() -> None:
@@ -1562,6 +1650,9 @@ def write_runtime_assets() -> None:
         encoding="utf-8",
     )
     (OUT / "app.js").write_text(APP_JS, encoding="utf-8")
+    logo_src = ROOT / "assets" / "huggingface.svg"
+    if logo_src.exists():
+        shutil.copyfile(logo_src, OUT / "huggingface.svg")
     write_app_icons()
     if cfg.get("apiKey"):
         print("  Firebase: configured (Save online enabled)")
@@ -1591,8 +1682,11 @@ def build() -> None:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agents Course</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
+<link rel="shortcut icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 <meta name="theme-color" content="#1c1d1f">
 <meta http-equiv="refresh" content="0; url=/vi/unit0/introduction.html">

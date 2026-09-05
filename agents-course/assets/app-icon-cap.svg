@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Agents Course cap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Agents Course">
   <rect width="64" height="64" rx="14" fill="#1c1d1f"/>
-  <path fill="#b8860b" d="M10 28 L32 18 L54 28 L32 38 Z"/>
-  <path fill="#d4a017" d="M20 30 V42 c0 4 5.5 7 12 7s12-3 12-7V30 L32 36 Z"/>
-  <path stroke="#8b6914" stroke-width="2.2" stroke-linecap="round" d="M50 28 V40"/>
-  <circle cx="50" cy="42" r="2.4" fill="#f7f1e1"/>
-  <circle cx="24" cy="14" r="2.2" fill="#f7f1e1"/>
-  <circle cx="32" cy="10" r="2.8" fill="#b8860b"/>
-  <circle cx="40" cy="14" r="2.2" fill="#f7f1e1"/>
-  <path stroke="#f7f1e1" stroke-width="1.5" stroke-linecap="round" d="M26 15 L30.5 11.5 M38 15 L33.5 11.5"/>
+  <path d="M20 30V42C20 46 25.5 49 32 49C38.5 49 44 46 44 42V30L32 36L20 30Z" fill="#D4A017"/>
+  <path d="M50 28V40" stroke="#8B6914" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="50" cy="42" r="2.4" fill="#F7F1E1"/>
+  <circle cx="26.2" cy="15.2" r="2.2" fill="#F7F1E1"/>
+  <circle cx="38.2" cy="15.2" r="2.2" fill="#F7F1E1"/>
+  <path d="M26 15L30.5 11.5M38 15L33.5 11.5" stroke="#F7F1E1" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M10 28L32 18L54 28L32 38L10 28Z" fill="#B8860B"/>
+  <circle cx="32" cy="10" r="2.8" fill="#B8860B"/>
 </svg>
