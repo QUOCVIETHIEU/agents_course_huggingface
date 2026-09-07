@@ -542,7 +542,8 @@ button, select { font: inherit; }
 .lesson-end-sentinel {
   height: 1px;
   width: 100%;
-  margin: 0;
+  margin: 1.5rem 0 0;
+  padding-bottom: 0.25rem;
   pointer-events: none;
 }
 
@@ -1090,6 +1091,18 @@ function setLessonFooterVisible(show) {
   footer.setAttribute('aria-hidden', show ? 'false' : 'true');
 }
 
+function updateLessonFooterFromScroll() {
+  const sentinel = document.getElementById('lesson-end-sentinel');
+  if (!sentinel) {
+    setLessonFooterVisible(true);
+    return;
+  }
+  const rect = sentinel.getBoundingClientRect();
+  // Show once the end of the lesson reaches (or passes) the viewport
+  const reached = rect.top < window.innerHeight - 12;
+  setLessonFooterVisible(reached);
+}
+
 function watchLessonEnd() {
   const sentinel = document.getElementById('lesson-end-sentinel');
   const footer = document.getElementById('lesson-footer');
@@ -1098,16 +1111,18 @@ function watchLessonEnd() {
     setLessonFooterVisible(true);
     return;
   }
-  const io = new IntersectionObserver((entries) => {
-    const hit = entries.some((e) => e.isIntersecting);
-    setLessonFooterVisible(hit);
-  }, { root: null, threshold: 0, rootMargin: '0px 0px -8% 0px' });
+
+  const io = new IntersectionObserver(() => {
+    updateLessonFooterFromScroll();
+  }, { root: null, threshold: [0, 0.01, 1], rootMargin: '0px 0px 40px 0px' });
   io.observe(sentinel);
-  // Short lessons: end already on screen
-  requestAnimationFrame(() => {
-    const rect = sentinel.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.92) setLessonFooterVisible(true);
-  });
+
+  window.addEventListener('scroll', updateLessonFooterFromScroll, { passive: true });
+  window.addEventListener('resize', updateLessonFooterFromScroll);
+  // Run after layout (fonts/images may shift height)
+  requestAnimationFrame(updateLessonFooterFromScroll);
+  setTimeout(updateLessonFooterFromScroll, 100);
+  setTimeout(updateLessonFooterFromScroll, 500);
 }
 
 function closeAccountMenu() {
