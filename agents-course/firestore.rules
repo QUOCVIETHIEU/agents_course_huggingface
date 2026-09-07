@@ -4,5 +4,35 @@ service cloud.firestore {
     match /users/{userId}/progress/{docId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Aggregate counters for the source dialog (public read).
+    // NOTE: the web SDK stores numbers as doubles, so use `is number` (not `is int`).
+    match /stats/{docId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.keys().hasOnly(['linkClicks', 'registrations', 'updatedAt'])
+        && request.resource.data.linkClicks is number
+        && request.resource.data.registrations is number
+        && request.resource.data.linkClicks >= 0
+        && request.resource.data.registrations >= 0
+        && request.resource.data.linkClicks <= 1
+        && request.resource.data.registrations <= 1;
+
+      allow update: if request.resource.data.linkClicks is number
+        && request.resource.data.registrations is number
+        && request.resource.data.linkClicks >= resource.data.linkClicks
+        && request.resource.data.registrations >= resource.data.registrations
+        && request.resource.data.linkClicks - resource.data.linkClicks <= 1
+        && request.resource.data.registrations - resource.data.registrations <= 1;
+    }
+
+    // One registration record per signed-in user (unique people who used Save online).
+    match /registrations/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['createdAt']);
+      allow update, delete: if false;
+    }
   }
 }

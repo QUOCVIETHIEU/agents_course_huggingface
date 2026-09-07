@@ -1,0 +1,8 @@
+.venv-preview
+.venv
+.git.hf-backup
+.env
+__pycache__
+*.pyc
+.DS_Store
+preview-vi/.vercel

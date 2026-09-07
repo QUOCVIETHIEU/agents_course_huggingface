@@ -1,0 +1,8 @@
+**/.venv-preview/**
+**/.venv/**
+**/.git.hf-backup/**
+**/.env
+**/__pycache__
+**/.DS_Store
+agents-course/preview-vi/.vercel
+.vercel

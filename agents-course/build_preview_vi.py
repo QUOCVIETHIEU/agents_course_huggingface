@@ -65,7 +65,15 @@ LANGS = {
         "source_title": "Course source",
         "source_body": "This learning app is built from a clone of the Hugging Face Agents Course repository. Content remains attributed to Hugging Face.",
         "source_close": "Close",
+        "stats_heading": "Community interest",
+        "stats_link_clicks": "Opened source links",
+        "stats_registrations": "Signed up online",
+        "stats_unavailable": "Stats unavailable until Firebase is configured",
         "complete_hint": "Scroll to the end to mark complete",
+        "quiz_submit": "Check answer",
+        "quiz_pick": "Please select an answer",
+        "quiz_correct": "Correct",
+        "quiz_incorrect": "Not quite",
     },
     "vi": {
         "label": "VN",
@@ -100,7 +108,15 @@ LANGS = {
         "source_title": "Nguồn khóa học",
         "source_body": "App học này được dựng từ bản clone repo Hugging Face Agents Course. Nội dung vẫn thuộc về Hugging Face.",
         "source_close": "Đóng",
+        "stats_heading": "Mức độ quan tâm",
+        "stats_link_clicks": "Đã mở link nguồn",
+        "stats_registrations": "Đã đăng ký online",
+        "stats_unavailable": "Chưa có số liệu — cần cấu hình Firebase",
         "complete_hint": "Cuộn hết bài để đánh dấu hoàn thành",
+        "quiz_submit": "Kiểm tra đáp án",
+        "quiz_pick": "Hãy chọn một đáp án",
+        "quiz_correct": "Chính xác",
+        "quiz_incorrect": "Chưa đúng",
     },
 }
 
@@ -118,7 +134,72 @@ def preprocess_mdx(text: str) -> str:
     return text
 
 
-def render_md(text: str) -> str:
+QUESTION_RE = re.compile(r"<Question\s+choices=\{\[([\s\S]*?)\]\}\s*/>", re.M)
+CHOICE_RE = re.compile(
+    r"\{\s*text:\s*\"((?:\\.|[^\"\\])*)\"\s*,\s*"
+    r"explain:\s*\"((?:\\.|[^\"\\])*)\"\s*,?\s*"
+    r"(?:correct:\s*true\s*,?)?\s*\}",
+    re.M,
+)
+
+
+def _unescape_mdx_string(value: str) -> str:
+    return (
+        value.replace(r"\\", "\\")
+        .replace(r"\"", '"')
+        .replace(r"\'", "'")
+        .replace(r"\n", "\n")
+    )
+
+
+def convert_question_components(text: str, lang: str) -> str:
+    """Turn MDX <Question choices={...} /> into interactive HTML quiz widgets."""
+    meta = LANGS[lang]
+    submit = html_lib.escape(meta["quiz_submit"])
+    counter = {"n": 0}
+
+    def repl(match: re.Match) -> str:
+        body = match.group(1)
+        choices: list[tuple[str, str, bool]] = []
+        for cm in CHOICE_RE.finditer(body):
+            raw = cm.group(0)
+            choices.append(
+                (
+                    _unescape_mdx_string(cm.group(1)),
+                    _unescape_mdx_string(cm.group(2)),
+                    "correct: true" in raw,
+                )
+            )
+        if len(choices) < 2:
+            return match.group(0)
+
+        counter["n"] += 1
+        qid = f"quiz-{counter['n']}"
+        options = []
+        for idx, (choice_text, explain, is_correct) in enumerate(choices):
+            options.append(
+                "<label class=\"quiz-choice\">"
+                f'<input type="radio" name="{qid}" value="{idx}" '
+                f'data-correct="{"1" if is_correct else "0"}" '
+                f'data-explain="{html_lib.escape(explain, quote=True)}">'
+                '<span class="quiz-radio" aria-hidden="true"></span>'
+                f'<span class="quiz-choice-text">{html_lib.escape(choice_text)}</span>'
+                "</label>"
+            )
+        return (
+            f'<div class="quiz-q" data-quiz-id="{qid}">'
+            f'<div class="quiz-choices">{"".join(options)}</div>'
+            f'<button type="button" class="btn btn-primary quiz-submit" data-quiz-submit>'
+            f"{submit}</button>"
+            '<div class="quiz-feedback" hidden></div>'
+            "</div>\n"
+        )
+
+    return QUESTION_RE.sub(repl, text)
+
+
+def render_md(text: str, lang: str = "en") -> str:
+    text = convert_question_components(text, lang)
     return markdown.markdown(
         preprocess_mdx(text),
         extensions=["fenced_code", "tables", "toc", "sane_lists", "attr_list"],
@@ -381,9 +462,12 @@ button, select { font: inherit; }
 .auth-dialog {
   border: 0;
   padding: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   max-width: min(420px, calc(100vw - 2rem));
   box-shadow: 0 18px 50px rgba(28,29,31,.28);
+}
+.auth-dialog.source-dialog {
+  max-width: min(460px, calc(100vw - 2rem));
 }
 .auth-dialog::backdrop { background: rgba(28,29,31,.45); }
 .auth-card {
@@ -396,7 +480,7 @@ button, select { font: inherit; }
   font-size: 1.1rem;
   letter-spacing: -0.02em;
 }
-.auth-card p {
+.auth-card > p {
   margin: 0 0 1.1rem;
   font-size: 0.9rem;
   line-height: 1.55;
@@ -418,8 +502,13 @@ button, select { font: inherit; }
 .source-links {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.45rem;
   margin: 0 0 1rem;
+}
+.source-links > span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 .source-links a {
   color: var(--accent-dark);
@@ -429,6 +518,196 @@ button, select { font: inherit; }
   font-size: 0.9rem;
   word-break: break-all;
 }
+.source-stats {
+  margin: 0 0 1.15rem;
+  padding: 0.95rem 1rem 1rem;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(255, 210, 30, 0.14), transparent 55%),
+    linear-gradient(165deg, #fbf8f1 0%, #f4eee3 100%);
+  border: 1px solid rgba(184, 134, 11, 0.18);
+}
+.source-stats-kicker {
+  display: block;
+  margin: 0 0 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+}
+.source-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+.source-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.7rem 0.75rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .35s ease, transform .35s ease;
+}
+.source-stats.is-ready .source-stat {
+  opacity: 1;
+  transform: none;
+}
+.source-stats.is-ready .source-stat:nth-child(2) {
+  transition-delay: .06s;
+}
+.source-stat-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(184, 134, 11, 0.12);
+  color: var(--accent-dark);
+}
+.source-stat-icon svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+.source-stat-value {
+  display: block;
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.source-stat-label {
+  display: block;
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 550;
+  line-height: 1.35;
+  color: #5c5f63;
+}
+.source-stats-note {
+  margin: 0.7rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+@media (max-width: 420px) {
+  .source-stats-grid { grid-template-columns: 1fr; }
+  .source-stats.is-ready .source-stat:nth-child(2) { transition-delay: .04s; }
+}
+.quiz-q {
+  margin: 0.85rem 0 1.35rem;
+  padding: 1rem 1.05rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.quiz-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0 0 0.95rem;
+}
+.quiz-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fafbfc;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.quiz-choice:hover {
+  border-color: rgba(184,134,11,.45);
+  background: var(--accent-soft);
+}
+.quiz-choice:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(184,134,11,.25);
+}
+.quiz-choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.quiz-radio {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 0.15rem;
+  border: 2px solid #8a8f94;
+  border-radius: 50%;
+  background: #fff;
+  position: relative;
+}
+.quiz-choice:has(input:checked) .quiz-radio {
+  border-color: var(--accent-dark);
+}
+.quiz-choice:has(input:checked) .quiz-radio::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.quiz-choice-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.quiz-choice.is-correct {
+  border-color: var(--ok);
+  background: var(--ok-bg);
+}
+.quiz-choice.is-correct .quiz-radio {
+  border-color: var(--ok);
+}
+.quiz-choice.is-correct .quiz-radio::after {
+  background: var(--ok);
+}
+.quiz-choice.is-wrong {
+  border-color: #d9534f;
+  background: #fff1f0;
+}
+.quiz-choice.is-wrong .quiz-radio {
+  border-color: #d9534f;
+}
+.quiz-submit {
+  font-size: 0.86rem;
+}
+.quiz-q.is-answered .quiz-submit { display: none; }
+.quiz-feedback {
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.quiz-feedback.ok {
+  background: var(--ok-bg);
+  color: #0f6b3d;
+  border: 1px solid rgba(25,168,99,.28);
+}
+.quiz-feedback.bad {
+  background: #fff1f0;
+  color: #8a1f1b;
+  border: 1px solid rgba(217,83,79,.28);
+}
+.quiz-feedback strong { display: block; margin-bottom: 0.2rem; }
 
 /* ===== Layout ===== */
 .player {
@@ -903,6 +1182,8 @@ button, select { font: inherit; }
 APP_JS = r"""
 const STORAGE_KEY = 'agents-course-progress-v1';
 const PROGRESS_DOC = 'course';
+const LINK_CLICK_KEY = 'agents-course-source-link-counted-v2';
+const STATS_DOC = 'course';
 
 let auth = null;
 let db = null;
@@ -935,6 +1216,166 @@ function firebaseEnabled() {
 
 function progressRef(uid) {
   return db.collection('users').doc(uid).collection('progress').doc(PROGRESS_DOC);
+}
+
+function statsRef() {
+  return db.collection('stats').doc(STATS_DOC);
+}
+
+function formatStatCount(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return '—';
+  try {
+    return n.toLocaleString();
+  } catch (e) {
+    return String(n);
+  }
+}
+
+function setStatsUnavailable(show) {
+  const note = document.getElementById('source-stats-note');
+  if (note) note.hidden = !show;
+}
+
+async function loadCourseStats() {
+  const clicksEl = document.getElementById('stat-link-clicks');
+  const regsEl = document.getElementById('stat-registrations');
+  if (!clicksEl || !regsEl) return;
+
+  if (!firebaseEnabled() || !db) {
+    clicksEl.textContent = '—';
+    regsEl.textContent = '—';
+    setStatsUnavailable(true);
+    return;
+  }
+
+  setStatsUnavailable(false);
+  try {
+    const snap = await statsRef().get();
+    const data = snap.exists ? snap.data() : {};
+    clicksEl.textContent = formatStatCount(Number(data.linkClicks) || 0);
+    regsEl.textContent = formatStatCount(Number(data.registrations) || 0);
+  } catch (err) {
+    console.warn('Stats load failed', err);
+    clicksEl.textContent = '—';
+    regsEl.textContent = '—';
+    setStatsUnavailable(true);
+  }
+}
+
+async function incrementStat(field) {
+  if (!db) return false;
+  try {
+    await db.runTransaction(async (tx) => {
+      const ref = statsRef();
+      const snap = await tx.get(ref);
+      const data = snap.exists ? snap.data() : {};
+      const linkClicks = Number(data.linkClicks) || 0;
+      const registrations = Number(data.registrations) || 0;
+      tx.set(ref, {
+        linkClicks: field === 'linkClicks' ? linkClicks + 1 : linkClicks,
+        registrations: field === 'registrations' ? registrations + 1 : registrations,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+    return true;
+  } catch (err) {
+    console.warn('Stat increment failed', err);
+    return false;
+  }
+}
+
+async function trackSourceLinkClick() {
+  try {
+    if (localStorage.getItem(LINK_CLICK_KEY)) return;
+  } catch (e) {
+    // continue; still attempt a count
+  }
+  if (!firebaseEnabled() || !db) return;
+  const ok = await incrementStat('linkClicks');
+  if (!ok) return;
+  try {
+    localStorage.setItem(LINK_CLICK_KEY, '1');
+  } catch (e) {}
+  loadCourseStats();
+}
+
+async function trackRegistration(uid) {
+  if (!db || !uid || !currentUser) return;
+  const regRef = db.collection('registrations').doc(uid);
+  try {
+    await db.runTransaction(async (tx) => {
+      const existing = await tx.get(regRef);
+      if (existing.exists) return;
+      tx.set(regRef, {
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      const statsSnap = await tx.get(statsRef());
+      const cur = statsSnap.exists ? (Number(statsSnap.data().registrations) || 0) : 0;
+      const clicks = statsSnap.exists ? (Number(statsSnap.data().linkClicks) || 0) : 0;
+      tx.set(statsRef(), {
+        registrations: cur + 1,
+        linkClicks: clicks,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+    loadCourseStats();
+  } catch (err) {
+    // Already counted, or rules rejected — ignore quietly
+    if (err && err.code !== 'already-exists') {
+      console.warn('Registration track failed', err);
+    }
+  }
+}
+
+function wireSourceLinkTracking() {
+  document.querySelectorAll('a[data-track-link]').forEach((a) => {
+    a.addEventListener('click', () => {
+      trackSourceLinkClick();
+    });
+  });
+}
+
+function wireQuizzes() {
+  document.querySelectorAll('[data-quiz-submit]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const block = btn.closest('.quiz-q');
+      if (!block || block.classList.contains('is-answered')) return;
+      const selected = block.querySelector('input[type="radio"]:checked');
+      const feedback = block.querySelector('.quiz-feedback');
+      if (!selected) {
+        if (feedback) {
+          feedback.hidden = false;
+          feedback.className = 'quiz-feedback bad';
+          feedback.innerHTML = '<strong></strong>';
+          feedback.querySelector('strong').textContent =
+            document.body.dataset.quizPick || 'Please select an answer';
+        }
+        return;
+      }
+
+      const correct = selected.getAttribute('data-correct') === '1';
+      const explain = selected.getAttribute('data-explain') || '';
+      block.querySelectorAll('.quiz-choice').forEach((label) => {
+        label.classList.remove('is-correct', 'is-wrong');
+        const input = label.querySelector('input');
+        if (!input) return;
+        if (input.getAttribute('data-correct') === '1') label.classList.add('is-correct');
+        else if (input === selected) label.classList.add('is-wrong');
+        input.disabled = true;
+      });
+      block.classList.add('is-answered');
+      if (feedback) {
+        feedback.hidden = false;
+        feedback.className = 'quiz-feedback ' + (correct ? 'ok' : 'bad');
+        const title = correct
+          ? (document.body.dataset.quizCorrect || 'Correct')
+          : (document.body.dataset.quizIncorrect || 'Not quite');
+        feedback.innerHTML = '<strong></strong><span></span>';
+        feedback.querySelector('strong').textContent = title;
+        feedback.querySelector('span').textContent = explain;
+      }
+    });
+  });
 }
 
 function queueCloudSave(data) {
@@ -1081,7 +1522,15 @@ function refreshUI() {
 
 function openSourceDialog() {
   const dialog = document.getElementById('source-dialog');
+  const stats = document.getElementById('source-stats');
+  if (stats) stats.classList.remove('is-ready');
   if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (stats) stats.classList.add('is-ready');
+    });
+  });
+  loadCourseStats();
 }
 
 function setLessonFooterVisible(show) {
@@ -1225,6 +1674,7 @@ function initFirebase() {
     renderAccountUI(null);
     const wrap = document.getElementById('account-wrap');
     if (wrap) wrap.classList.remove('enabled');
+    setStatsUnavailable(true);
     return;
   }
 
@@ -1234,16 +1684,21 @@ function initFirebase() {
     db = firebase.firestore();
   } catch (err) {
     console.warn('Firebase init failed', err);
+    setStatsUnavailable(true);
     return;
   }
 
   wireAuthUI();
+  loadCourseStats();
   auth.getRedirectResult().catch(() => {});
   auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     authReady = true;
     renderAccountUI(user);
-    if (user) await pullAndMergeCloud();
+    if (user) {
+      await trackRegistration(user.uid);
+      await pullAndMergeCloud();
+    }
     refreshUI();
   });
 }
@@ -1264,6 +1719,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn && local) btn.addEventListener('click', () => toggleDone(local));
   const sourceBtn = document.getElementById('source-btn');
   if (sourceBtn) sourceBtn.addEventListener('click', openSourceDialog);
+  wireSourceLinkTracking();
+  wireQuizzes();
   watchLessonEnd();
   initFirebase();
 });
@@ -1422,6 +1879,9 @@ def shell(
   data-sign-in-google="{html_lib.escape(meta["sign_in_google"])}"
   data-sign-out="{html_lib.escape(meta["sign_out"])}"
   data-signed-in-as="{html_lib.escape(meta["signed_in_as"])}"
+  data-quiz-pick="{html_lib.escape(meta["quiz_pick"])}"
+  data-quiz-correct="{html_lib.escape(meta["quiz_correct"])}"
+  data-quiz-incorrect="{html_lib.escape(meta["quiz_incorrect"])}"
 >
 <header class="topbar">
   <a class="brand" href="/{lang}/unit0/introduction.html">
@@ -1477,15 +1937,49 @@ def shell(
 {curriculum}
 </div>
 
-<dialog id="source-dialog" class="auth-dialog">
+<dialog id="source-dialog" class="auth-dialog source-dialog">
   <form method="dialog" class="auth-card">
     <h2>{html_lib.escape(meta["source_title"])}</h2>
     <p>{html_lib.escape(meta["source_body"])}</p>
     <p class="source-links">
       <span>{html_lib.escape(meta["attribution"])}</span>
-      <a href="{HF_REPO_URL}" target="_blank" rel="noopener noreferrer">{HF_REPO_SHORT}</a>
-      <a href="{HF_COURSE_URL}" target="_blank" rel="noopener noreferrer">{HF_COURSE_SHORT}</a>
+      <a href="{HF_REPO_URL}" target="_blank" rel="noopener noreferrer" data-track-link="1">{HF_REPO_SHORT}</a>
+      <a href="{HF_COURSE_URL}" target="_blank" rel="noopener noreferrer" data-track-link="1">{HF_COURSE_SHORT}</a>
     </p>
+    <div class="source-stats" id="source-stats">
+      <span class="source-stats-kicker">{html_lib.escape(meta["stats_heading"])}</span>
+      <div class="source-stats-grid">
+        <div class="source-stat">
+          <span class="source-stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5.93"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 11a5 5 0 0 0-7.07 0L5.52 12.4a5 5 0 0 0 7.07 7.07L14 18.07"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div>
+            <strong class="source-stat-value" id="stat-link-clicks">—</strong>
+            <span class="source-stat-label">{html_lib.escape(meta["stats_link_clicks"])}</span>
+          </div>
+        </div>
+        <div class="source-stat">
+          <span class="source-stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9.5" cy="7" r="3.25" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M19 8v4M17 10h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div>
+            <strong class="source-stat-value" id="stat-registrations">—</strong>
+            <span class="source-stat-label">{html_lib.escape(meta["stats_registrations"])}</span>
+          </div>
+        </div>
+      </div>
+      <p class="source-stats-note" id="source-stats-note" hidden>{html_lib.escape(meta["stats_unavailable"])}</p>
+    </div>
     <div class="auth-actions">
       <button value="cancel" class="btn btn-ghost">{html_lib.escape(meta["source_close"])}</button>
     </div>
@@ -1540,7 +2034,7 @@ def build_lang(lang: str) -> tuple[int, list[str]]:
             missing.append(f"{lang}/{local}")
             continue
 
-        body = render_md(src.read_text(encoding="utf-8"))
+        body = render_md(src.read_text(encoding="utf-8"), lang)
         body, _ = inject_heading_ids(body)
 
         prev_href = prev_title = next_href = next_title = None
@@ -1708,6 +2202,19 @@ def build() -> None:
 </head><body>
 <p><a href="/vi/unit0/introduction.html">VN</a> · <a href="/en/unit0/introduction.html">EN</a></p>
 </body></html>
+""",
+        encoding="utf-8",
+    )
+    (OUT / "vercel.json").write_text(
+        """{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" }
+  ]
+}
 """,
         encoding="utf-8",
     )

@@ -6,3 +6,4 @@
 **/preview-vi/
 **/.venv-preview/
 **/.git.hf-backup/
+.vercel
